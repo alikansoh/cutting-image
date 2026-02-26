@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* Theme tokens (CSS-first) -------------------------------------------------- */
+@theme {
+  /* Brand colors */
+  --color-brand-black: #0b0b0b;
+  --color-brand-gold: #D4AF37;
+  --color-brand-gold-dark: #B8860B;
+  --color-brand-accent: #F59E0B;
+
+  /* Font tokens — next/font should set --font-heading and --font-body on <html> */
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+
+  /* Semantic tokens you may use in custom CSS later */
+  --color-background: #ffffff;
+  --color-foreground: #171717;
+}
+
+/* Dark mode via plain media query (reliable and compatible) ----------------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #0a0a0a;
+    --color-foreground: #ededed;
+
+    /* slight tweak if you want the gold to look different in dark */
+    --color-brand-gold: #D4AF37;
+  }
+}
+
+/* Small helper classes so you can use .bg-brand-gold, .text-brand-gold, etc. */
+.bg-brand-gold { background-color: var(--color-brand-gold); }
+.bg-brand-gold-dark { background-color: var(--color-brand-gold-dark); }
+.bg-brand-black { background-color: var(--color-brand-black); }
+
+.text-brand-gold { color: var(--color-brand-gold); }
+.text-brand-black { color: var(--color-brand-black); }
+
+/* If you prefer arbitrary utilities instead:
+   bg-[color:var(--color-brand-gold)]
+   text-[color:var(--color-brand-gold)]
+*/
+
+/* Base styles (interacts with Tailwind's preflight) ------------------------- */
+:root {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+}
+
+html, body, #__next {
+  height: 100%;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fonts: next/font/google should populate --font-heading / --font-body */
+body {
+  font-family: var(--font-body), system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+h1, h2, h3, h4, .heading {
+  font-family: var(--font-heading), system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Small helpers to keep parity with earlier examples */
+.bg-foreground { background-color: var(--color-foreground); }
+.text-background { color: var(--color-background); }
+
+/* Make dark:invert on images work similarly */
+.dark img { filter: invert(1) hue-rotate(180deg); }
