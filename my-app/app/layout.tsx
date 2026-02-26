@@ -1,33 +1,51 @@
 import './globals.css'
 import type { ReactNode } from 'react'
-import { Poppins, Inter } from 'next/font/google'
-import Nav from './Components/Nav'
+import { Bebas_Neue, Cormorant_Garamond, DM_Sans } from 'next/font/google'
+import Nav from '@/app/Components/Nav'
 
-const poppins = Poppins({
+const bebasNeue = Bebas_Neue({
+  weight: '400',
   subsets: ['latin'],
-  weight: ['400', '600', '700', '800'],
-  variable: '--font-heading',
-  display: 'swap'
+  display: 'swap',
+  variable: '--font-bebas',
 })
 
-const inter = Inter({
+const cormorant = Cormorant_Garamond({
+  weight: ['500', '600'],
+  style: ['normal', 'italic'],
   subsets: ['latin'],
-  weight: ['300', '400', '600', '700'],
-  variable: '--font-body',
-  display: 'swap'
+  display: 'swap',
+  variable: '--font-corm',
+})
+
+const dmSans = DM_Sans({
+  weight: ['300', '400', '500'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-dm',
 })
 
 export const metadata = {
-  title: 'Barber Shop',
-  description: 'Modern barber shop with stylish UI and animations'
+  title: 'Cutting Image | Premium Barbershop · Staines',
+  description: 'Expert cuts, hot towel shaves & beard sculpting at 173 High Street, Staines.',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${poppins.variable} ${inter.variable}`}>
+    <html lang="en" className={`${bebasNeue.variable} ${cormorant.variable} ${dmSans.variable}`}>
+      <head>
+        {/* Preload hero poster to fix LCP delay */}
+        <link
+          rel="preload"
+          as="image"
+          href="/hero-poster.png"
+          fetchPriority="high"
+        />
+      </head>
       <body>
         <Nav />
-        {children}</body>
+        {children}
+      </body>
     </html>
   )
 }

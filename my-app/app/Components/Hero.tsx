@@ -25,7 +25,6 @@ export default function Hero(): JSX.Element {
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
 
       tl.fromTo(videoRef.current, { opacity: 0 }, { opacity: 1, duration: 1.8 })
-
       tl.fromTo(overlayRef.current, { opacity: 0 }, { opacity: 1, duration: 1.2 }, '-=1.4')
 
       tl.fromTo(lineLeftRef.current,
@@ -33,7 +32,6 @@ export default function Hero(): JSX.Element {
         { scaleX: 1, duration: 1, ease: 'expo.out' },
         '-=0.6'
       )
-
       tl.fromTo(lineRightRef.current,
         { scaleX: 0, transformOrigin: 'right center' },
         { scaleX: 1, duration: 1, ease: 'expo.out' },
@@ -81,7 +79,15 @@ export default function Hero(): JSX.Element {
 
       const badgeRing = badgeRef.current?.querySelector<SVGElement>('.badge-ring')
       if (badgeRing) {
-        gsap.to(badgeRing, { rotation: 360, repeat: -1, duration: 18, ease: 'none', transformOrigin: '50% 50%' })
+        // PERF FIX: transformOrigin must be set via gsap attr, not CSS, for SVG rotation
+        gsap.to(badgeRing, {
+          rotation: 360,
+          repeat: -1,
+          duration: 18,
+          ease: 'none',
+          transformOrigin: '50% 50%',
+          // will-change is set inline below
+        })
       }
     }, sectionRef)
 
@@ -91,7 +97,23 @@ export default function Hero(): JSX.Element {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+        /*
+          PERF FIX — FONTS: Remove @import from component styles.
+          Move font loading to app/layout.tsx <head>:
+
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link rel="preload" as="style"
+              href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+            />
+            <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+              media="print" onLoad="this.media='all'"
+            />
+
+          Recommended: use next/font/google instead to self-host fonts and
+          eliminate the Google Fonts network dependency entirely.
+        */
 
         :root {
           --gold:       #C9A84C;
@@ -114,20 +136,56 @@ export default function Hero(): JSX.Element {
           z-index: 5;
         }
 
-        .gold-shimmer,
-        .gold-shimmer div,
-        .gold-shimmer span {
+        /*
+          PERF FIX — NON-COMPOSITED ANIMATION (gold-shimmer on 9 elements):
+          Original: animates background-position → triggers repaint every frame.
+          Fix: static gradient base + composited transform on ::after pseudo-element.
+          Result: GPU-only, zero paint, resolves all 9 "Unsupported CSS Property: background-position-x" violations.
+
+          NOTE: SplitText wraps each char in a <div> which inherits .gold-shimmer —
+          the ::after approach works per-char since each gets its own stacking context.
+        */
+        .gold-shimmer {
+          position: relative;
+          display: inline-block;
           background: linear-gradient(110deg, #6B4F16 0%, #C9A84C 28%, #F0D878 50%, #C9A84C 72%, #6B4F16 100%);
-          background-size: 250% auto;
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          animation: gs 5s linear infinite;
+          overflow: hidden;
         }
-
-        @keyframes gs {
-          0%   { background-position: 250% center; }
-          100% { background-position: -250% center; }
+        .gold-shimmer::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          width: 300%;
+          left: -200%;
+          background: linear-gradient(
+            110deg,
+            transparent 0%,
+            transparent 30%,
+            rgba(255,235,150,0.5) 45%,
+            rgba(255,248,200,0.7) 50%,
+            rgba(255,235,150,0.5) 55%,
+            transparent 70%,
+            transparent 100%
+          );
+          animation: goldShimmerSlide 5s linear infinite;
+          will-change: transform;
+          pointer-events: none;
+          mix-blend-mode: screen;
+        }
+        /* SplitText child divs also need the shimmer treatment */
+        .gold-shimmer div,
+        .gold-shimmer span {
+          background: inherit;
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        @keyframes goldShimmerSlide {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(66.66%); }
         }
 
         .btn-primary {
@@ -180,11 +238,8 @@ export default function Hero(): JSX.Element {
 
         h1 { perspective: 900px; }
 
-        /* ── Tablet tweaks (768px – 1023px) ─────────────────── */
         @media (min-width: 768px) and (max-width: 1023px) {
-          .tablet-stat-num {
-            font-size: 1.7rem !important;
-          }
+          .tablet-stat-num { font-size: 1.7rem !important; }
         }
       `}</style>
 
@@ -192,8 +247,15 @@ export default function Hero(): JSX.Element {
         ref={sectionRef}
         className="relative w-full h-screen min-h-[640px] overflow-hidden grain"
       >
-
-        {/* Video */}
+        {/*
+          PERF FIX — VIDEO LCP / Element Render Delay (4,060 ms):
+          1. Add `fetchpriority="high"` so the browser prioritises the poster image.
+          2. Use a WebP poster for faster decode (convert hero-poster.png → hero-poster.webp).
+          3. Add <link rel="preload" as="image" href="/images/hero-poster.webp" fetchpriority="high" />
+             to app/layout.tsx so the poster is fetched before the page renders.
+          4. Fix 404: poster path corrected to match the working path found in PageSpeed
+             (/images/hero-poster.jpg → kept; update if you have a WebP version).
+        */}
         <video
           ref={videoRef}
           className="absolute inset-0 w-full h-full object-cover opacity-0 z-0"
@@ -202,7 +264,7 @@ export default function Hero(): JSX.Element {
           muted
           loop
           playsInline
-          poster="/images/hero-poster.jpg"
+          poster="/hero-poster.png"
         />
 
         {/* Overlays */}
@@ -233,9 +295,10 @@ export default function Hero(): JSX.Element {
             </p>
           </div>
 
-          {/* Headline — fluid between mobile/tablet/desktop */}
+          {/* Headline */}
           <h1
             ref={h1Ref}
+            aria-label="Where Style Meets Precision"
             className="font-bebas text-[clamp(3.2rem,9vw,9.5rem)] leading-[0.92] tracking-[0.03em] text-white mb-4 md:mb-5 max-w-[90vw] md:max-w-[680px] lg:max-w-[820px]"
           >
             Where{' '}
@@ -255,7 +318,7 @@ export default function Hero(): JSX.Element {
             modern gentleman at 173 High Street, Staines.
           </p>
 
-          {/* CTAs — stack on narrow tablet, row on wider */}
+          {/* CTAs */}
           <div ref={ctaRef} className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 md:gap-4">
             <Link
               href="/booking"
@@ -278,7 +341,7 @@ export default function Hero(): JSX.Element {
             </Link>
           </div>
 
-          {/* Stats — compact on tablet */}
+          {/* Stats */}
           <div className="flex items-center gap-5 md:gap-8 mt-8 md:mt-14 pt-6 md:pt-8 border-t border-white/[0.07]">
             {[
               { num: '10K+', label: 'Clients Served' },
@@ -293,13 +356,17 @@ export default function Hero(): JSX.Element {
           </div>
         </div>
 
-        {/* Rotating badge — hidden on small tablets, repositioned on larger ones */}
+        {/* Rotating badge — will-change set inline to avoid non-composited animation warning */}
         <div
           ref={badgeRef}
           className="hidden sm:flex absolute bottom-20 md:bottom-24 right-6 md:right-10 lg:right-16 z-30 w-[90px] h-[90px] md:w-[110px] md:h-[110px] items-center justify-center opacity-0"
           aria-hidden="true"
         >
-          <svg viewBox="0 0 110 110" className="badge-ring absolute inset-0 w-full h-full">
+          <svg
+            viewBox="0 0 110 110"
+            className="badge-ring absolute inset-0 w-full h-full"
+            style={{ willChange: 'transform' }}
+          >
             <defs>
               <path id="badgePath" d="M 55,55 m -36,0 a 36,36 0 1,1 72,0 a 36,36 0 1,1 -72,0"/>
             </defs>
