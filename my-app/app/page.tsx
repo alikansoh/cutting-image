@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Hero from './Components/Hero'
-import AboutSection from './Components/AboutUs'
+// import AboutSection from './Components/AboutUs'
 import OurService from './Components/OurService'
 import Offer from './Components/Offer'
 
@@ -9,7 +9,7 @@ export default function Home() {
     <div>
       <main>
         <Hero />
-        <AboutSection />
+        {/* <AboutSection /> */}
         <OurService />
         <Offer />
 
