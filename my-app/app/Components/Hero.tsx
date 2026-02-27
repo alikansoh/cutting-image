@@ -108,7 +108,7 @@ export default function Hero(): JSX.Element {
         <link
           rel="preload"
           as="image"
-          href="/hero-poster.sp"
+          href="/hero-poster.webp"
           fetchPriority="high"
         />
       </Head>
