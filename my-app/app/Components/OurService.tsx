@@ -10,7 +10,7 @@ import Image from "next/image";
 //  Save them to:  /public/icons/scissors.svg  etc.
 //  Open each SVG and set:  stroke="#C9A84C"  fill="none"
 //  Gold colour code: #C9A84C
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────���───────────────────────────────
 
 interface Category {
   num: number;
@@ -343,6 +343,8 @@ export default function ServicesOverview(): JSX.Element {
           color: transparent; -webkit-text-stroke: 1px rgba(201,168,76,0.12);
           pointer-events: none; user-select: none; z-index: 1; will-change: transform;
           transition: -webkit-text-stroke-color 0.4s;
+          /* small top padding to nudge the number slightly downward */
+          padding-top: 6px;
         }
         .sv-card:hover .sv-num { -webkit-text-stroke-color: rgba(201,168,76,0.24); }
 

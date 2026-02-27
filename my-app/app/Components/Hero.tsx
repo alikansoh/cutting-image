@@ -331,7 +331,7 @@ export default function Hero(): JSX.Element {
           <div className="flex items-center gap-5 md:gap-8 mt-8 md:mt-14 pt-6 md:pt-8 border-t border-white/[0.07]">
             {[
               { num: '10K+', label: 'Clients Served' },
-              { num: '30+',  label: 'Years Experience' },
+              { num: '35+',  label: 'Years Experience' },
               { num: '4.9★', label: 'Google Rating'   },
             ].map(({ num, label }) => (
               <div key={label} className="flex flex-col gap-1">
