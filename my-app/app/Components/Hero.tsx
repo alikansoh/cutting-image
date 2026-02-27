@@ -246,7 +246,7 @@ export default function Hero(): JSX.Element {
           muted
           loop
           playsInline
-          poster="/hero-poster.png"
+          poster="/hero-poster.webp"
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
           fetchPriority="high"
