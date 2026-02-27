@@ -853,7 +853,7 @@ export default function AboutSection(): JSX.Element {
               <div className="ci-img-main">
                 <div className="ci-img-cover" />
                 <Image
-                  src="/about2.jpg"
+                  src="/about2.webp"
                   alt="Barber giving a precision haircut"
                   fill
                   className="ci-img-el"
@@ -869,7 +869,7 @@ export default function AboutSection(): JSX.Element {
               <div className="ci-img-accent">
                 <div className="ci-img-cover" />
                 <Image
-                  src="/about1.jpg"
+                  src="/about1.webp"
                   alt="Classic barbershop interior"
                   fill
                   className="ci-img-el"
