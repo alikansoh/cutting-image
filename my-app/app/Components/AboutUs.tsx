@@ -869,7 +869,7 @@ export default function AboutSection(): JSX.Element {
               <div className="ci-img-accent">
                 <div className="ci-img-cover" />
                 <Image
-                  src="/about1.webp"
+                  src="/about1.jpg"
                   alt="Classic barbershop interior"
                   fill
                   className="ci-img-el"
