@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { JSX, useEffect, useRef } from "react";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -37,10 +38,10 @@ declare global {
 
 // ── Data ───────────────────────────────────────────────────────────────────────
 const STATS: Stat[] = [
-  { value: "35+",  label: "Years of Excellence" },
-  { value: "10K+", label: "Happy Clients"       },
-  { value: "8",    label: "Master Barbers"      },
-  { value: "4.9★", label: "Average Rating"      },
+  { value: "35+", label: "Years of Excellence" },
+  { value: "10K+", label: "Happy Clients" },
+  { value: "8", label: "Master Barbers" },
+  { value: "4.9★", label: "Average Rating" },
 ];
 
 const PILLARS: Pillar[] = [
@@ -63,8 +64,8 @@ const PILLARS: Pillar[] = [
 
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function AboutSection(): JSX.Element {
-  const sectionRef   = useRef<HTMLElement>(null);
-  const hasAnimated  = useRef<boolean>(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const hasAnimated = useRef<boolean>(false);
 
   useEffect(() => {
     const loadGSAP = async (): Promise<void> => {
@@ -72,7 +73,8 @@ export default function AboutSection(): JSX.Element {
       if (!document.querySelector('script[src*="gsap.min.js"]')) {
         await new Promise<void>((resolve) => {
           const s = document.createElement("script");
-          s.src = "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js";
+          s.src =
+            "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js";
           s.onload = () => resolve();
           document.head.appendChild(s);
         });
@@ -84,7 +86,8 @@ export default function AboutSection(): JSX.Element {
       if (!document.querySelector('script[src*="ScrollTrigger.min.js"]')) {
         await new Promise<void>((resolve) => {
           const s = document.createElement("script");
-          s.src = "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js";
+          s.src =
+            "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js";
           s.onload = () => resolve();
           document.head.appendChild(s);
         });
@@ -96,7 +99,7 @@ export default function AboutSection(): JSX.Element {
     };
 
     const initAnimations = (): void => {
-      const gsap          = window.gsap;
+      const gsap = window.gsap;
       const ScrollTrigger = window.ScrollTrigger;
       if (!gsap || !ScrollTrigger || hasAnimated.current) return;
       hasAnimated.current = true;
@@ -185,7 +188,8 @@ export default function AboutSection(): JSX.Element {
         if (!wrap) return;
 
         const cover = wrap.querySelector<HTMLElement>(".ci-img-cover");
-        const img   = wrap.querySelector<HTMLImageElement>("img");
+        // Image from next/image renders an <img> internally — select it for animation
+        const img = wrap.querySelector<HTMLImageElement>("img");
 
         if (cover) {
           gsap.fromTo(
@@ -218,8 +222,8 @@ export default function AboutSection(): JSX.Element {
       });
 
       // ── Year badge pop
-      const badge    = sec.querySelector<HTMLElement>(".ci-badge");
-      const imgMain  = sec.querySelector<HTMLElement>(".ci-img-main");
+      const badge = sec.querySelector<HTMLElement>(".ci-badge");
+      const imgMain = sec.querySelector<HTMLElement>(".ci-img-main");
       if (badge) {
         gsap.fromTo(
           badge,
@@ -237,10 +241,9 @@ export default function AboutSection(): JSX.Element {
 
       // ── Stats count-up
       sec.querySelectorAll<HTMLElement>(".ci-stat-num").forEach((el) => {
-        const raw    = el.dataset.val ?? "";
-        const num    = parseFloat(raw);
-        const suffix = raw.replace(/[\d.]+/, "");
-        const item   = el.closest<HTMLElement>(".ci-stat-item");
+        // data-val now holds the original display string (e.g. "10K+", "4.9★", "35+")
+        const raw = el.dataset.val ?? "";
+        const item = el.closest<HTMLElement>(".ci-stat-item");
 
         if (item) {
           gsap.fromTo(
@@ -256,17 +259,46 @@ export default function AboutSection(): JSX.Element {
           );
         }
 
+        // If the stat includes a star (Google rating), do NOT animate — leave it static
+        if (raw.includes("★")) {
+          el.textContent = raw;
+          return;
+        }
+
+        // Extract numeric portion (e.g. "10" from "10K+") and the suffix ("K+")
+        const match = raw.match(/[\d.]+/);
+        if (!match) {
+          el.textContent = raw;
+          return;
+        }
+        const num = parseFloat(match[0]);
+        let suffix = raw.replace(/[\d.]+/, "");
+        // Normalise 'K' to lowercase 'k' (user requested "k" next to 10)
+        suffix = suffix.replace(/K/i, "k");
+
         if (!isNaN(num)) {
           const obj: { val: number } = { val: 0 };
+          const isDecimal = match[0].includes(".");
+
           gsap.to(obj, {
             val: num,
             duration: 2.2,
             ease: "power2.out",
             onUpdate: () => {
-              el.textContent = Math.round(obj.val) + suffix;
+              if (isDecimal) {
+                // preserve a single decimal place for decimals (if any)
+                const displayed = (Math.round(obj.val * 10) / 10)
+                  .toFixed(1)
+                  .replace(/\.0$/, "");
+                el.textContent = displayed + suffix;
+              } else {
+                el.textContent = Math.round(obj.val) + suffix;
+              }
             },
             scrollTrigger: { trigger: el, start: "top 88%" },
           });
+        } else {
+          el.textContent = raw;
         }
       });
 
@@ -531,15 +563,21 @@ export default function AboutSection(): JSX.Element {
           -webkit-text-fill-color: transparent;
         }
 
+        /* Updated body text: slightly bolder and darker for better contrast on dark bg */
         .ci-body-text {
           font-family: 'Cormorant Garamond', serif;
           font-size: clamp(1.1rem, 1.5vw, 1.3rem);
-          font-weight: 300;
+          /* increase weight from 300 to 400 to appear thicker */
+          font-weight: 400;
           line-height: 1.8;
-          color: rgba(240, 234, 214, 0.55); /* matches Hero sub opacity */
+          /* increase opacity so it reads better on the dark background */
+          color: rgba(240, 234, 214, 0.90);
           max-width: 500px;
           margin-bottom: 24px;
           font-style: italic;
+          /* subtle smoothing for crisper rendering on some displays */
+          -webkit-font-smoothing: antialiased;
+          text-rendering: optimizeLegibility;
         }
 
         /* ── CTA — aligned with Hero .btn-secondary feel ── */
@@ -593,11 +631,12 @@ export default function AboutSection(): JSX.Element {
           transform-origin: right center;
         }
 
-        .ci-img-main img,
-        .ci-img-accent img {
-          width: 100%; height: 100%;
+        /* Next.js Image element styling (used with fill) */
+        .ci-img-main .ci-img-el,
+        .ci-img-accent .ci-img-el {
           object-fit: cover;
           display: block;
+          z-index: 1;
         }
 
         .ci-img-label {
@@ -703,12 +742,14 @@ export default function AboutSection(): JSX.Element {
           background: var(--gold);
           margin-bottom: 16px;
         }
+
+        /* Updated pillar body: match the increased weight and contrast of .ci-body-text */
         .ci-pillar-body {
           font-family: 'Cormorant Garamond', serif;
           font-size: 1.08rem;
           line-height: 1.85;
-          color: var(--ci-body-text);
-          font-weight: 300;
+          color: rgba(240, 234, 214, 0.90); /* darker for legibility on dark bg */
+          font-weight: 400; /* thicker than before */
         }
 
         /* ── Bottom divider — matches Hero border-t style ── */
@@ -748,7 +789,8 @@ export default function AboutSection(): JSX.Element {
               <div key={s.label} className="ci-stat-item">
                 <span
                   className="ci-stat-num"
-                  data-val={String(parseFloat(s.value) || s.value)}
+                  // keep the original string so we can parse numeric part + suffix correctly
+                  data-val={s.value}
                 >
                   {s.value}
                 </span>
@@ -761,7 +803,6 @@ export default function AboutSection(): JSX.Element {
         {/* Main split */}
         <div className="ci-inner">
           <div className="ci-split">
-
             {/* Copy */}
             <div className="ci-copy">
               <div className="ci-eyebrow">
@@ -777,18 +818,25 @@ export default function AboutSection(): JSX.Element {
 
               <p className="ci-body-text ci-fade-up">
                 One of Staines&apos; finest traditional barbershops since 1990.
-                When you walk through our doors, it&apos;s about you — sit back, relax,
-                and let people who genuinely love their craft take care of the rest.
+                When you walk through our doors, it&apos;s about you — sit back,
+                relax, and let people who genuinely love their craft take care
+                of the rest.
               </p>
               <p className="ci-body-text ci-fade-up">
-                Leather-and-chrome chairs, complimentary drinks on arrival, and a team
-                of master barbers who understand that a great cut is only the beginning
-                of a great experience.
+                Leather-and-chrome chairs, complimentary drinks on arrival, and
+                a team of master barbers who understand that a great cut is only
+                the beginning of a great experience.
               </p>
 
               <a href="/booking" className="ci-cta ci-fade-up">
                 Book Your Visit
-                <svg width="20" height="12" viewBox="0 0 20 12" fill="none" aria-hidden="true">
+                <svg
+                  width="20"
+                  height="12"
+                  viewBox="0 0 20 12"
+                  fill="none"
+                  aria-hidden="true"
+                >
                   <path
                     d="M1 6h18M13 1l6 5-6 5"
                     stroke="currentColor"
@@ -804,20 +852,28 @@ export default function AboutSection(): JSX.Element {
             <div className="ci-img-stack">
               <div className="ci-img-main">
                 <div className="ci-img-cover" />
-                <img
-                  src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=900&q=80"
+                <Image
+                  src="/about2.jpg"
                   alt="Barber giving a precision haircut"
+                  fill
+                  className="ci-img-el"
+                  style={{ objectFit: "cover" }}
+                  priority
                 />
                 <div className="ci-badge">
                   <span className="ci-badge-since">Since</span>
                   <span className="ci-badge-year">1990</span>
                 </div>
               </div>
+
               <div className="ci-img-accent">
                 <div className="ci-img-cover" />
-                <img
-                  src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&q=80"
+                <Image
+                  src="/about1.jpg"
                   alt="Classic barbershop interior"
+                  fill
+                  className="ci-img-el"
+                  style={{ objectFit: "cover" }}
                 />
                 <div className="ci-img-label">Kingston Rd · Staines</div>
               </div>
@@ -829,7 +885,9 @@ export default function AboutSection(): JSX.Element {
         <div className="ci-pillars">
           {PILLARS.map((p) => (
             <div key={p.num} className="ci-pillar">
-              <span className="ci-pillar-bg-num" aria-hidden="true">{p.num}</span>
+              <span className="ci-pillar-bg-num" aria-hidden="true">
+                {p.num}
+              </span>
               <h3 className="ci-pillar-title">{p.title}</h3>
               <p className="ci-pillar-body">{p.body}</p>
             </div>
