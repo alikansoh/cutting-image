@@ -1,6 +1,7 @@
 "use client"
 
 import Link from 'next/link'
+import Head from 'next/head'
 import { JSX, useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { SplitText } from 'gsap/SplitText'
@@ -79,14 +80,12 @@ export default function Hero(): JSX.Element {
 
       const badgeRing = badgeRef.current?.querySelector<SVGElement>('.badge-ring')
       if (badgeRing) {
-        // PERF FIX: transformOrigin must be set via gsap attr, not CSS, for SVG rotation
         gsap.to(badgeRing, {
           rotation: 360,
           repeat: -1,
           duration: 18,
           ease: 'none',
           transformOrigin: '50% 50%',
-          // will-change is set inline below
         })
       }
     }, sectionRef)
@@ -96,6 +95,24 @@ export default function Hero(): JSX.Element {
 
   return (
     <>
+      {/*
+        PERF FIX — Poster preload:
+        This <Head> block pushes a high-priority preload for the poster image
+        so the browser fetches it before the page renders, eliminating the
+        LCP delay caused by a late-discovered poster attribute.
+
+        If you are on Next.js 13+ App Router, move this <link> tag into
+        app/layout.tsx inside the <head> element instead.
+      */}
+      <Head>
+        <link
+          rel="preload"
+          as="image"
+          href="/hero-poster.png"
+          fetchPriority="high"
+        />
+      </Head>
+
       <style>{`
         /*
           PERF FIX — FONTS: Remove @import from component styles.
@@ -137,55 +154,23 @@ export default function Hero(): JSX.Element {
         }
 
         /*
-          PERF FIX — NON-COMPOSITED ANIMATION (gold-shimmer on 9 elements):
-          Original: animates background-position → triggers repaint every frame.
-          Fix: static gradient base + composited transform on ::after pseudo-element.
-          Result: GPU-only, zero paint, resolves all 9 "Unsupported CSS Property: background-position-x" violations.
-
-          NOTE: SplitText wraps each char in a <div> which inherits .gold-shimmer —
-          the ::after approach works per-char since each gets its own stacking context.
+          CHANGE — "Style" word: was .gold-shimmer (animated background-position).
+          Now uses .gold-static — a plain gradient, zero animation, zero repaints.
+          Visually identical gold look, no CPU/GPU cost.
         */
-        .gold-shimmer {
-          position: relative;
-          display: inline-block;
+        .gold-static {
           background: linear-gradient(110deg, #6B4F16 0%, #C9A84C 28%, #F0D878 50%, #C9A84C 72%, #6B4F16 100%);
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          overflow: hidden;
         }
-        .gold-shimmer::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          width: 300%;
-          left: -200%;
-          background: linear-gradient(
-            110deg,
-            transparent 0%,
-            transparent 30%,
-            rgba(255,235,150,0.5) 45%,
-            rgba(255,248,200,0.7) 50%,
-            rgba(255,235,150,0.5) 55%,
-            transparent 70%,
-            transparent 100%
-          );
-          animation: goldShimmerSlide 5s linear infinite;
-          will-change: transform;
-          pointer-events: none;
-          mix-blend-mode: screen;
-        }
-        /* SplitText child divs also need the shimmer treatment */
-        .gold-shimmer div,
-        .gold-shimmer span {
+        /* SplitText child divs inherit the gradient */
+        .gold-static div,
+        .gold-static span {
           background: inherit;
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-        }
-        @keyframes goldShimmerSlide {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(66.66%); }
         }
 
         .btn-primary {
@@ -248,13 +233,10 @@ export default function Hero(): JSX.Element {
         className="relative w-full h-screen min-h-[640px] overflow-hidden grain"
       >
         {/*
-          PERF FIX — VIDEO LCP / Element Render Delay (4,060 ms):
-          1. Add `fetchpriority="high"` so the browser prioritises the poster image.
-          2. Use a WebP poster for faster decode (convert hero-poster.png → hero-poster.webp).
-          3. Add <link rel="preload" as="image" href="/images/hero-poster.webp" fetchpriority="high" />
-             to app/layout.tsx so the poster is fetched before the page renders.
-          4. Fix 404: poster path corrected to match the working path found in PageSpeed
-             (/images/hero-poster.jpg → kept; update if you have a WebP version).
+          PERF FIX — VIDEO LCP / Element Render Delay:
+          - fetchpriority="high" on the video tag prioritises the poster image.
+          - Poster is now also preloaded via <Head> above.
+          - poster path kept as /hero-poster.png — update to .webp when available.
         */}
         <video
           ref={videoRef}
@@ -265,6 +247,9 @@ export default function Hero(): JSX.Element {
           loop
           playsInline
           poster="/hero-poster.png"
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
+          fetchPriority="high"
         />
 
         {/* Overlays */}
@@ -302,7 +287,8 @@ export default function Hero(): JSX.Element {
             className="font-bebas text-[clamp(3.2rem,9vw,9.5rem)] leading-[0.92] tracking-[0.03em] text-white mb-4 md:mb-5 max-w-[90vw] md:max-w-[680px] lg:max-w-[820px]"
           >
             Where{' '}
-            <em className="gold-shimmer not-italic">Style</em>
+            {/* CHANGED: was gold-shimmer (animated), now gold-static (no animation) */}
+            <em className="gold-static not-italic">Style</em>
             <br />
             Meets{' '}
             <span className="text-white/90">Precision</span>
@@ -356,7 +342,7 @@ export default function Hero(): JSX.Element {
           </div>
         </div>
 
-        {/* Rotating badge — will-change set inline to avoid non-composited animation warning */}
+        {/* Rotating badge */}
         <div
           ref={badgeRef}
           className="hidden sm:flex absolute bottom-20 md:bottom-24 right-6 md:right-10 lg:right-16 z-30 w-[90px] h-[90px] md:w-[110px] md:h-[110px] items-center justify-center opacity-0"

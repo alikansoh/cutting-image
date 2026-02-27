@@ -33,24 +33,6 @@ export default function Nav() {
 
   return (
     <>
-      {/*
-        PERF FIX — FONTS (render-blocking, ~1,500 ms savings):
-        Remove the @import from this component entirely.
-        Add these tags to app/layout.tsx <head> instead:
-
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          <link rel="preload" as="style"
-            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap"
-          />
-          <link rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap"
-            media="print" onLoad="this.media='all'"
-          />
-
-        OR better yet, use next/font/google (self-hosted, zero external request):
-          import { Bebas_Neue, Cormorant_Garamond, DM_Sans } from 'next/font/google'
-      */}
       <style>{`
         :root {
           --gold:       #C9A84C;
@@ -64,39 +46,13 @@ export default function Nav() {
         .font-corm  { font-family: 'Cormorant Garamond', serif; }
         .font-dm    { font-family: 'DM Sans', sans-serif; }
 
-        /*
-          PERF FIX — NON-COMPOSITED ANIMATION (eliminates 9 paint-per-frame violations):
-          Original code animated background-position, which forces repaint on every frame.
-          New approach: static gradient base + a pseudo-element that slides via transform.
-          transform is 100% composited — GPU-only, zero paint, zero layout.
-        */
-        .gold-shimmer,
-        .gold-shimmer *  {
+        .gold-shimmer {
           display: inline-block;
-          background: linear-gradient(
-            90deg,
-            #3D2600 0%,
-            #7A4F10 8%,
-            #C9A84C 20%,
-            #F0D060 30%,
-            #FFF0A0 38%,
-            #FFE066 44%,
-            #C9A84C 55%,
-            #7A4F10 68%,
-            #3D2600 78%,
-            #7A4F10 88%,
-            #C9A84C 100%
-          );
-          background-size: 300% auto;
+          background: linear-gradient(160deg, #C9A84C, #F0D060);
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
           color: transparent;
-          animation: goldShimmer 3s linear infinite;
-        }
-        @keyframes goldShimmer {
-          0%   { background-position: 0% center; }
-          100% { background-position: 300% center; }
         }
 
         .gold-topbar::before {
@@ -128,7 +84,6 @@ export default function Nav() {
         .nav-underline:hover::after,
         .nav-underline:focus-visible::after { width: 100%; }
 
-        /* ── Hamburger ── */
         .hline {
           display: block;
           width: 24px; height: 1.5px;
@@ -145,7 +100,6 @@ export default function Nav() {
         .hline-2-open { opacity: 0; transform: scaleX(0); }
         .hline-3-open { transform: translateY(-6.5px) rotate(-45deg); background: #C9A84C; }
 
-        /* ── Full-screen drawer ── */
         .drawer {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
@@ -272,21 +226,11 @@ export default function Nav() {
         <div className="drawer-accent" aria-hidden />
 
         <div className="relative z-10 flex items-center justify-between px-6 pt-6 pb-2">
-          {/* In the drawer logo */}
-<Link href="/" onClick={() => setOpen(false)} className="flex flex-col leading-none">
-  <span className="gold-shimmer font-bebas text-[1.4rem] tracking-widest">
-    Cutting Image
-  </span>
-</Link>
-
-{/* In the main header */}
-<Link href="/" className="flex items-center gap-3 shrink-0 group">
-  <div className="flex flex-col leading-none">
-    <span className="gold-shimmer font-bebas text-[1.45rem] tracking-[0.1em]">
-      Cutting Image
-    </span>
-  </div>
-</Link>
+          <Link href="/" onClick={() => setOpen(false)} className="flex flex-col leading-none">
+            <span className="gold-shimmer font-bebas text-[1.4rem] tracking-widest">
+              Cutting Image
+            </span>
+          </Link>
 
           <button
             onClick={() => setOpen(false)}
@@ -398,11 +342,9 @@ export default function Nav() {
         <div className="max-w-[1320px] mx-auto px-5 lg:px-12 h-[72px] flex items-center justify-between gap-8">
 
           <Link href="/" className="flex items-center gap-3 shrink-0 group">
-            <div className="flex flex-col leading-none gap-[4px]">
-              <span className="gold-shimmer font-bebas text-[1.45rem] tracking-[0.1em]">
-                Cutting Image
-              </span>
-            </div>
+            <span className="gold-shimmer font-bebas text-[1.45rem] tracking-[0.1em]">
+              Cutting Image
+            </span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-10">
@@ -434,8 +376,7 @@ export default function Nav() {
               href="/booking"
               className="book-btn group inline-flex items-center gap-2.5
                 font-dm text-[0.68rem] font-semibold tracking-[0.2em] uppercase
-                px-7 py-[11px] transition-all duration-300
-                hover:-translate-y-px"
+                px-7 py-[11px] transition-all duration-300 hover:-translate-y-px"
               style={{ background: '#C9A84C', color: '#080705' }}
             >
               Book Now
