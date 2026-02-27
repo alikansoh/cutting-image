@@ -66,284 +66,311 @@ const PILLARS: Pillar[] = [
 export default function AboutSection(): JSX.Element {
   const sectionRef = useRef<HTMLElement>(null);
   const hasAnimated = useRef<boolean>(false);
+  const hasLoadedScripts = useRef<boolean>(false);
 
   useEffect(() => {
-    const loadGSAP = async (): Promise<void> => {
-      // Load GSAP core
-      if (!document.querySelector('script[src*="gsap.min.js"]')) {
-        await new Promise<void>((resolve) => {
-          const s = document.createElement("script");
-          s.src =
-            "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js";
-          s.onload = () => resolve();
-          document.head.appendChild(s);
-        });
-      } else {
-        await new Promise<void>((r) => setTimeout(r, 100));
-      }
+    // Lazy-load GSAP + ScrollTrigger only when the section is near the viewport.
+    // This reduces initial JS parse and avoids blocking work before the section is relevant.
+    const node = sectionRef.current;
+    if (!node) return;
 
-      // Load ScrollTrigger
-      if (!document.querySelector('script[src*="ScrollTrigger.min.js"]')) {
-        await new Promise<void>((resolve) => {
-          const s = document.createElement("script");
-          s.src =
-            "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js";
-          s.onload = () => resolve();
-          document.head.appendChild(s);
-        });
-      } else {
-        await new Promise<void>((r) => setTimeout(r, 100));
-      }
+    let observer: IntersectionObserver | null = null;
 
-      initAnimations();
-    };
-
-    const initAnimations = (): void => {
-      const gsap = window.gsap;
-      const ScrollTrigger = window.ScrollTrigger;
-      if (!gsap || !ScrollTrigger || hasAnimated.current) return;
-      hasAnimated.current = true;
-      gsap.registerPlugin(ScrollTrigger);
-
-      const sec = sectionRef.current;
-      if (!sec) return;
-
-      // ── Line draw
-      gsap.fromTo(
-        sec.querySelector<HTMLElement>(".ci-line-draw"),
-        { scaleX: 0 },
-        {
-          scaleX: 1,
-          duration: 1.4,
-          ease: "power3.out",
-          transformOrigin: "left center",
-          scrollTrigger: { trigger: sec, start: "top 75%" },
+    const onIntersect = (entries: IntersectionObserverEntry[]) => {
+      const e = entries[0];
+      if (e.isIntersecting) {
+        // Stop observing — we only need to load once
+        if (observer) {
+          observer.disconnect();
+          observer = null;
         }
-      );
-
-      // ── Heading char-by-char reveal
-      // Only animate .ci-heading-line elements (plain text), never the gold word element
-      sec.querySelectorAll<HTMLElement>(".ci-heading-line").forEach((line) => {
-        const text = line.textContent ?? "";
-        line.innerHTML = text
-          .split("")
-          .map((c) =>
-            c.trim() === ""
-              ? `<span style="display:inline-block;width:0.3em"> </span>`
-              : `<span class="ci-char" style="display:inline-block">${c}</span>`
-          )
-          .join("");
-      });
-
-      const headingWrap = sec.querySelector<HTMLElement>(".ci-heading-wrap");
-      if (headingWrap) {
-        gsap.fromTo(
-          headingWrap.querySelectorAll<HTMLElement>(".ci-char"),
-          { yPercent: 115, rotationX: -45, opacity: 0 },
-          {
-            yPercent: 0,
-            rotationX: 0,
-            opacity: 1,
-            stagger: 0.025,
-            duration: 0.85,
-            ease: "power3.out",
-            scrollTrigger: { trigger: sec, start: "top 72%" },
-          }
-        );
-
-        gsap.fromTo(
-          headingWrap.querySelector<HTMLElement>(".ci-heading-gold-word"),
-          { yPercent: 115, opacity: 0 },
-          {
-            yPercent: 0,
-            opacity: 1,
-            duration: 0.85,
-            delay: 0.25,
-            ease: "power3.out",
-            scrollTrigger: { trigger: sec, start: "top 72%" },
-          }
-        );
-      }
-
-      // ── Fade-up copy elements
-      gsap.fromTo(
-        sec.querySelectorAll<HTMLElement>(".ci-fade-up"),
-        { y: 55, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          stagger: 0.13,
-          duration: 1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: sec.querySelector<HTMLElement>(".ci-copy"),
-            start: "top 72%",
-          },
-        }
-      );
-
-      // ── Image wipe reveal
-      ([".ci-img-main", ".ci-img-accent"] as const).forEach((sel, i) => {
-        const wrap = sec.querySelector<HTMLElement>(sel);
-        if (!wrap) return;
-
-        const cover = wrap.querySelector<HTMLElement>(".ci-img-cover");
-        // Image from next/image renders an <img> internally — select it for animation
-        const img = wrap.querySelector<HTMLImageElement>("img");
-
-        if (cover) {
-          gsap.fromTo(
-            cover,
-            { scaleX: 1 },
-            {
-              scaleX: 0,
-              duration: 1.3,
-              delay: i * 0.2,
-              ease: "power4.inOut",
-              transformOrigin: "right center",
-              scrollTrigger: { trigger: wrap, start: "top 78%" },
-            }
-          );
-        }
-
-        if (img) {
-          gsap.fromTo(
-            img,
-            { scale: 1.2 },
-            {
-              scale: 1,
-              duration: 1.8,
-              delay: i * 0.2,
-              ease: "power2.out",
-              scrollTrigger: { trigger: wrap, start: "top 78%" },
-            }
-          );
-        }
-      });
-
-      // ── Year badge pop
-      const badge = sec.querySelector<HTMLElement>(".ci-badge");
-      const imgMain = sec.querySelector<HTMLElement>(".ci-img-main");
-      if (badge) {
-        gsap.fromTo(
-          badge,
-          { scale: 0, rotation: -15 },
-          {
-            scale: 1,
-            rotation: 0,
-            duration: 0.7,
-            ease: "back.out(1.7)",
-            delay: 0.6,
-            scrollTrigger: { trigger: imgMain ?? sec, start: "top 78%" },
-          }
-        );
-      }
-
-      // ── Stats count-up
-      sec.querySelectorAll<HTMLElement>(".ci-stat-num").forEach((el) => {
-        // data-val now holds the original display string (e.g. "10K+", "4.9★", "35+")
-        const raw = el.dataset.val ?? "";
-        const item = el.closest<HTMLElement>(".ci-stat-item");
-
-        if (item) {
-          gsap.fromTo(
-            item,
-            { y: 40, opacity: 0 },
-            {
-              y: 0,
-              opacity: 1,
-              duration: 0.8,
-              ease: "power3.out",
-              scrollTrigger: { trigger: el, start: "top 88%" },
-            }
-          );
-        }
-
-        // If the stat includes a star (Google rating), do NOT animate — leave it static
-        if (raw.includes("★")) {
-          el.textContent = raw;
-          return;
-        }
-
-        // Extract numeric portion (e.g. "10" from "10K+") and the suffix ("K+")
-        const match = raw.match(/[\d.]+/);
-        if (!match) {
-          el.textContent = raw;
-          return;
-        }
-        const num = parseFloat(match[0]);
-        let suffix = raw.replace(/[\d.]+/, "");
-        // Normalise 'K' to lowercase 'k' (user requested "k" next to 10)
-        suffix = suffix.replace(/K/i, "k");
-
-        if (!isNaN(num)) {
-          const obj: { val: number } = { val: 0 };
-          const isDecimal = match[0].includes(".");
-
-          gsap.to(obj, {
-            val: num,
-            duration: 2.2,
-            ease: "power2.out",
-            onUpdate: () => {
-              if (isDecimal) {
-                // preserve a single decimal place for decimals (if any)
-                const displayed = (Math.round(obj.val * 10) / 10)
-                  .toFixed(1)
-                  .replace(/\.0$/, "");
-                el.textContent = displayed + suffix;
-              } else {
-                el.textContent = Math.round(obj.val) + suffix;
-              }
-            },
-            scrollTrigger: { trigger: el, start: "top 88%" },
-          });
-        } else {
-          el.textContent = raw;
-        }
-      });
-
-      // ── Pillar cards stagger slide
-      const pillarsContainer = sec.querySelector<HTMLElement>(".ci-pillars");
-      gsap.fromTo(
-        sec.querySelectorAll<HTMLElement>(".ci-pillar"),
-        { x: 70, opacity: 0 },
-        {
-          x: 0,
-          opacity: 1,
-          stagger: 0.15,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: pillarsContainer ?? sec,
-            start: "top 80%",
-          },
-        }
-      );
-
-      // ── Gold vertical bar parallax
-      const goldBar = sec.querySelector<HTMLElement>(".ci-gold-bar");
-      if (goldBar) {
-        gsap.to(goldBar, {
-          y: -80,
-          ease: "none",
-          scrollTrigger: {
-            trigger: sec,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 2,
-          },
-        });
+        // Load GSAP & init animations
+        loadGSAP();
       }
     };
 
-    loadGSAP();
+    observer = new IntersectionObserver(onIntersect, {
+      root: null,
+      rootMargin: "300px", // start loading before the section reaches the viewport
+      threshold: 0.01,
+    });
+
+    observer.observe(node);
 
     return () => {
+      if (observer) observer.disconnect();
       if (window.ScrollTrigger) {
         window.ScrollTrigger.getAll().forEach((t) => t.kill());
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const loadScript = (src: string): Promise<void> =>
+    new Promise<void>((resolve) => {
+      // If the script is already present, resolve quickly.
+      if (document.querySelector(`script[src*="${src.split("/").pop()}"]`)) {
+        // small delay to ensure script has been parsed
+        setTimeout(() => resolve(), 50);
+        return;
+      }
+      const s = document.createElement("script");
+      s.src = src;
+      s.async = true;
+      // defer for non-inline execution where supported
+      s.defer = true;
+      s.crossOrigin = "anonymous";
+      s.onload = () => resolve();
+      document.head.appendChild(s);
+    });
+
+  const loadGSAP = async (): Promise<void> => {
+    if (hasLoadedScripts.current) return;
+    hasLoadedScripts.current = true;
+
+    // Load GSAP core & ScrollTrigger from CDN in a non-blocking way
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js");
+    await loadScript(
+      "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"
+    );
+
+    // After scripts are loaded, initialize animations.
+    initAnimations();
+  };
+
+  const initAnimations = (): void => {
+    const gsap = window.gsap;
+    const ScrollTrigger = window.ScrollTrigger;
+    if (!gsap || !ScrollTrigger || hasAnimated.current) return;
+    hasAnimated.current = true;
+    gsap.registerPlugin(ScrollTrigger);
+
+    const sec = sectionRef.current;
+    if (!sec) return;
+
+    // ── Line draw
+    gsap.fromTo(
+      sec.querySelector<HTMLElement>(".ci-line-draw"),
+      { scaleX: 0 },
+      {
+        scaleX: 1,
+        duration: 1.4,
+        ease: "power3.out",
+        transformOrigin: "left center",
+        scrollTrigger: { trigger: sec, start: "top 75%" },
+      }
+    );
+
+    // ── Heading char-by-char reveal
+    // Only animate .ci-heading-line elements (plain text), never the gold word element
+    sec.querySelectorAll<HTMLElement>(".ci-heading-line").forEach((line) => {
+      const text = line.textContent ?? "";
+      // perform splitting now that we're about to animate (avoid creating spans earlier)
+      line.innerHTML = text
+        .split("")
+        .map((c) =>
+          c.trim() === ""
+            ? `<span style="display:inline-block;width:0.3em"> </span>`
+            : `<span class="ci-char" style="display:inline-block">${c}</span>`
+        )
+        .join("");
+    });
+
+    const headingWrap = sec.querySelector<HTMLElement>(".ci-heading-wrap");
+    if (headingWrap) {
+      gsap.fromTo(
+        headingWrap.querySelectorAll<HTMLElement>(".ci-char"),
+        { yPercent: 115, rotationX: -45, opacity: 0 },
+        {
+          yPercent: 0,
+          rotationX: 0,
+          opacity: 1,
+          stagger: 0.025,
+          duration: 0.85,
+          ease: "power3.out",
+          scrollTrigger: { trigger: sec, start: "top 72%" },
+        }
+      );
+
+      gsap.fromTo(
+        headingWrap.querySelector<HTMLElement>(".ci-heading-gold-word"),
+        { yPercent: 115, opacity: 0 },
+        {
+          yPercent: 0,
+          opacity: 1,
+          duration: 0.85,
+          delay: 0.25,
+          ease: "power3.out",
+          scrollTrigger: { trigger: sec, start: "top 72%" },
+        }
+      );
+    }
+
+    // ── Fade-up copy elements
+    gsap.fromTo(
+      sec.querySelectorAll<HTMLElement>(".ci-fade-up"),
+      { y: 55, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        stagger: 0.13,
+        duration: 1,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: sec.querySelector<HTMLElement>(".ci-copy"),
+          start: "top 72%",
+        },
+      }
+    );
+
+    // ── Image wipe reveal
+    ([".ci-img-main", ".ci-img-accent"] as const).forEach((sel, i) => {
+      const wrap = sec.querySelector<HTMLElement>(sel);
+      if (!wrap) return;
+
+      const cover = wrap.querySelector<HTMLElement>(".ci-img-cover");
+      // Image from next/image renders an <img> internally — select it for animation
+      const img = wrap.querySelector<HTMLImageElement>("img");
+
+      if (cover) {
+        gsap.fromTo(
+          cover,
+          { scaleX: 1 },
+          {
+            scaleX: 0,
+            duration: 1.3,
+            delay: i * 0.2,
+            ease: "power4.inOut",
+            transformOrigin: "right center",
+            scrollTrigger: { trigger: wrap, start: "top 78%" },
+          }
+        );
+      }
+
+      if (img) {
+        gsap.fromTo(
+          img,
+          { scale: 1.2 },
+          {
+            scale: 1,
+            duration: 1.8,
+            delay: i * 0.2,
+            ease: "power2.out",
+            scrollTrigger: { trigger: wrap, start: "top 78%" },
+          }
+        );
+      }
+    });
+
+    // ── Year badge pop
+    const badge = sec.querySelector<HTMLElement>(".ci-badge");
+    const imgMain = sec.querySelector<HTMLElement>(".ci-img-main");
+    if (badge) {
+      gsap.fromTo(
+        badge,
+        { scale: 0, rotation: -15 },
+        {
+          scale: 1,
+          rotation: 0,
+          duration: 0.7,
+          ease: "back.out(1.7)",
+          delay: 0.6,
+          scrollTrigger: { trigger: imgMain ?? sec, start: "top 78%" },
+        }
+      );
+    }
+
+    // ── Stats count-up
+    sec.querySelectorAll<HTMLElement>(".ci-stat-num").forEach((el) => {
+      const raw = el.dataset.val ?? "";
+      const item = el.closest<HTMLElement>(".ci-stat-item");
+
+      if (item) {
+        gsap.fromTo(
+          item,
+          { y: 40, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: { trigger: el, start: "top 88%" },
+          }
+        );
+      }
+
+      if (raw.includes("★")) {
+        el.textContent = raw;
+        return;
+      }
+
+      const match = raw.match(/[\d.]+/);
+      if (!match) {
+        el.textContent = raw;
+        return;
+      }
+      const num = parseFloat(match[0]);
+      let suffix = raw.replace(/[\d.]+/, "");
+      suffix = suffix.replace(/K/i, "k");
+
+      if (!isNaN(num)) {
+        const obj: { val: number } = { val: 0 };
+        const isDecimal = match[0].includes(".");
+
+        gsap.to(obj, {
+          val: num,
+          duration: 2.2,
+          ease: "power2.out",
+          onUpdate: () => {
+            if (isDecimal) {
+              const displayed = (Math.round(obj.val * 10) / 10)
+                .toFixed(1)
+                .replace(/\.0$/, "");
+              el.textContent = displayed + suffix;
+            } else {
+              el.textContent = Math.round(obj.val) + suffix;
+            }
+          },
+          scrollTrigger: { trigger: el, start: "top 88%" },
+        });
+      } else {
+        el.textContent = raw;
+      }
+    });
+
+    // ── Pillar cards stagger slide
+    const pillarsContainer = sec.querySelector<HTMLElement>(".ci-pillars");
+    gsap.fromTo(
+      sec.querySelectorAll<HTMLElement>(".ci-pillar"),
+      { x: 70, opacity: 0 },
+      {
+        x: 0,
+        opacity: 1,
+        stagger: 0.15,
+        duration: 1,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: pillarsContainer ?? sec,
+          start: "top 80%",
+        },
+      }
+    );
+
+    // ── Gold vertical bar parallax
+    const goldBar = sec.querySelector<HTMLElement>(".ci-gold-bar");
+    if (goldBar) {
+      gsap.to(goldBar, {
+        y: -80,
+        ease: "none",
+        scrollTrigger: {
+          trigger: sec,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 2,
+        },
+      });
+    }
+  };
 
   return (
     <>
@@ -859,6 +886,8 @@ export default function AboutSection(): JSX.Element {
                   className="ci-img-el"
                   style={{ objectFit: "cover" }}
                   priority
+                  // sizes help Next.js generate smaller images on narrow viewports
+                  sizes="(max-width: 960px) 100vw, (max-width: 1360px) 45vw, 680px"
                 />
                 <div className="ci-badge">
                   <span className="ci-badge-since">Since</span>
@@ -874,6 +903,8 @@ export default function AboutSection(): JSX.Element {
                   fill
                   className="ci-img-el"
                   style={{ objectFit: "cover" }}
+                  // accent image is non-critical — let Next.js lazy-load it and use a smaller size
+                  sizes="(max-width: 960px) 50vw, 310px"
                 />
                 <div className="ci-img-label">Kingston Rd · Staines</div>
               </div>
