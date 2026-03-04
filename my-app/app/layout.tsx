@@ -2,6 +2,7 @@ import './globals.css'
 import type { ReactNode } from 'react'
 import { Bebas_Neue, Cormorant_Garamond, DM_Sans } from 'next/font/google'
 import Nav from '@/app/Components/Nav'
+import Footer from '@/app/Components/Footer'
 
 const bebasNeue = Bebas_Neue({
   weight: '400',
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <Nav />
         {children}
+        <Footer />
       </body>
     </html>
   )
