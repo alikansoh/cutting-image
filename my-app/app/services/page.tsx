@@ -23,7 +23,7 @@ const CATEGORIES: ServiceCategory[] = [
   {
     id: "haircuts",
     title: "Haircuts",
-    image: "/haircuts.jpg",
+    image: "/haircut.jpg",
     services: [
       {
         name: "Wash, Haircut, Styling & Beard Trim",
@@ -148,10 +148,10 @@ const CATEGORIES: ServiceCategory[] = [
         price: "£30",
       },
       {
-        name: "Men's Waxing",
+        name: "Men's nose and ears Waxing",
         detail: "Clean, precise and professionally done",
-        duration: "30 mins",
-        price: "POA",
+        duration: "15 mins",
+        price: "£7",
       },
     ],
   },

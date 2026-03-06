@@ -17,7 +17,7 @@ const NAV_LINKS = [
   { label: "Home",     href: "/" },
   { label: "Services", href: "/services" },
   { label: "About",    href: "/about" },
-  { label: "Booking",  href: "/booking" },
+  { label: "contact us",  href: "/contact" },
 ];
 
 function getTodayName(): string {
@@ -501,10 +501,8 @@ export default function Footer(): JSX.Element {
               <span className="ft-wordmark-name">Cutting Image</span>
               <span className="ft-wordmark-sub">Premium Barbershop · Est. 1990</span>
             </div>
-            <Link href="/booking" className="ft-book-btn">
-              Book Appointment
-              <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
-            </Link>
+           
+           
           </div>
         </div>
 
