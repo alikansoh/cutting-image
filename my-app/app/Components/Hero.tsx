@@ -3,41 +3,6 @@
 import Link from 'next/link'
 import { JSX, useEffect, useRef } from 'react'
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  PERF CHANGES vs original:
-//
-//  1. FONTS: @import removed from <style>. Move to layout.tsx <head> as:
-//       <link rel="preconnect" href="https://fonts.googleapis.com" />
-//       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-//       <link rel="stylesheet"
-//         href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap"
-//         media="print" onLoad="this.media='all'"
-//       />
-//     Or better: use next/font/google (zero render-blocking, self-hosted).
-//
-//  2. ENTRANCE ANIMATIONS: Replaced GSAP timeline with pure CSS @keyframes +
-//     animation-delay. No JS needed for the visual entrance — eliminates GSAP
-//     from TBT entirely for above-fold content. FCP drops because elements
-//     are visible immediately via CSS, not gated on a 70 KiB script.
-//
-//  3. GSAP retained ONLY for: scroll-dot bounce + badge spin (both decorative,
-//     non-blocking, idle-loaded). These run after LCP with requestIdleCallback.
-//
-//  4. VIDEO: Added `preload="none"` — video should not compete with the poster
-//     image (the actual LCP candidate) for bandwidth on mobile/slow 4G.
-//     The poster is what users see; video plays once bandwidth is available.
-//
-//  5. POSTER PRELOAD: Add to layout.tsx <head>:
-//       <link rel="preload" as="image" href="/hero-poster.webp" fetchPriority="high" />
-//
-//  6. will-change: Removed from static elements. Only kept on badge-ring SVG
-//     (actively animating) and scroll-dot. Fewer compositing layers = less
-//     GPU memory pressure on mobile.
-//
-//  7. COLOR: Gold replaced with crimson palette matching About section.
-//     --cr: #8B1A28  --cr-b: #B02235  --cr-light: #C03050
-// ─────────────────────────────────────────────────────────────────────────────
-
 export default function Hero(): JSX.Element {
   const badgeRingRef = useRef<SVGSVGElement>(null)
   const scrollDotRef = useRef<HTMLSpanElement>(null)
@@ -109,7 +74,24 @@ export default function Hero(): JSX.Element {
           opacity: 0.04; pointer-events: none; z-index: 5;
         }
 
-        /* Crimson gradient accent — mirrors About's .ci-heading-accent */
+        .hero-top-light {
+          position: absolute;
+          left: 50%;
+          top: -6%;
+          transform: translateX(-50%);
+          width: 140%;
+          height: 42%;
+          pointer-events: none;
+          z-index: 11;
+          background: radial-gradient(ellipse at top center,
+            rgba(255, 250, 240, 0.16) 0%,
+            rgba(255, 250, 240, 0.08) 18%,
+            rgba(255, 250, 240, 0.03) 36%,
+            transparent 60%);
+          mix-blend-mode: screen;
+          filter: blur(28px);
+        }
+
         .cr-static {
           background: linear-gradient(110deg, #6E1020 0%, #8B1A28 28%, #C03050 50%, #8B1A28 72%, #6E1020 100%);
           -webkit-background-clip: text;
@@ -117,7 +99,6 @@ export default function Hero(): JSX.Element {
           -webkit-text-fill-color: transparent;
         }
 
-        /* ── CSS-only entrance animations ── */
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(24px); }
           to   { opacity: 1; transform: translateY(0); }
@@ -160,7 +141,6 @@ export default function Hero(): JSX.Element {
           }
         }
 
-        /* Primary CTA — crimson fill */
         .btn-primary {
           clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
           transition: background 0.3s, transform 0.25s, box-shadow 0.3s;
@@ -171,7 +151,6 @@ export default function Hero(): JSX.Element {
           box-shadow: 0 10px 40px rgba(139,26,40,0.45);
         }
 
-        /* Secondary CTA — crimson border */
         .btn-secondary {
           clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
           border: 1px solid rgba(139,26,40,0.45);
@@ -195,7 +174,6 @@ export default function Hero(): JSX.Element {
           letter-spacing: 3.4px; text-transform: uppercase;
         }
 
-        /* Stat numbers — crimson gradient */
         .stat-num {
           font-family: 'Bebas Neue', sans-serif;
           font-size: 2.1rem; line-height: 1;
@@ -228,11 +206,13 @@ export default function Hero(): JSX.Element {
           fetchPriority="high"
         />
 
-        {/* Overlays — subtle crimson tint at bottom-left instead of gold */}
+        <div className="hero-top-light" aria-hidden="true" />
+
+        {/* Overlays — lightened for better video visibility */}
         <div className="absolute inset-0 z-10 pointer-events-none anim-overlay">
-          <div className="absolute inset-0 bg-[rgba(5,4,3,0.72)]" />
-          <div className="absolute inset-0 bg-linear-to-r from-[rgba(5,4,3,0.88)] via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-linear-to-t from-[rgba(5,4,3,0.92)] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-[rgba(5,4,3,0.52)]" />
+          <div className="absolute inset-0 bg-linear-to-r from-[rgba(5,4,3,0.72)] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-[rgba(5,4,3,0.75)] via-transparent to-transparent" />
           <div className="absolute bottom-0 left-0 w-150 h-100 bg-[radial-gradient(ellipse_at_bottom_left,rgba(139,26,40,0.12)_0%,transparent_70%)]" />
         </div>
 
@@ -312,7 +292,7 @@ export default function Hero(): JSX.Element {
           </div>
         </div>
 
-        {/* Rotating badge — crimson ring text */}
+        {/* Rotating badge */}
         <div
           className="hidden sm:flex absolute bottom-20 md:bottom-24 right-6 md:right-10 lg:right-16 z-30 w-[90px] h-[90px] md:w-[110px] md:h-[110px] items-center justify-center anim-badge"
           aria-hidden="true"
@@ -330,13 +310,12 @@ export default function Hero(): JSX.Element {
               <textPath href="#badgePath">CUTTING IMAGE · STAINES · PREMIUM GROOMING · &nbsp;</textPath>
             </text>
           </svg>
-          {/* Diamond icon — crimson fill */}
           <div className="w-8 h-8 md:w-9 md:h-9 border border-[rgba(139,26,40,0.6)] rotate-45 flex items-center justify-center">
             <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-[#8B1A28]" />
           </div>
         </div>
 
-        {/* Scroll indicator — crimson dot */}
+        {/* Scroll indicator */}
         <div
           className="absolute bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 anim-scroll"
           aria-hidden="true"
@@ -351,7 +330,6 @@ export default function Hero(): JSX.Element {
           <span className="font-dm text-[0.52rem] tracking-[0.28em] uppercase text-white/25">Scroll</span>
         </div>
 
-        {/* Angled bottom cut */}
         <div className="hero-cut" aria-hidden="true" />
       </section>
     </>

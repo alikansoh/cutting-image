@@ -258,7 +258,7 @@ export default function AboutSection(): JSX.Element {
         /* Body text — warm dark brown, very readable on ivory */
         .ci-body-text {
           font-family:'Cormorant Garamond',serif;
-          font-size:clamp(1.1rem,1.5vw,1.3rem); font-weight:400; line-height:1.8;
+          font-size:clamp(1.1rem,1.5vw,1.3rem); font-weight:600; line-height:1.8;
           color:var(--ink-body); max-width:500px; margin-bottom:24px; font-style:italic;
           -webkit-font-smoothing:antialiased;
         }
@@ -349,7 +349,7 @@ export default function AboutSection(): JSX.Element {
         /* Body — warm dark brown */
         .ci-pillar-body {
           font-family:'Cormorant Garamond',serif; font-size:1.08rem;
-          line-height:1.85; color:var(--ink-body); font-weight:400;
+          line-height:1.85; color:var(--ink-body); font-weight:600;
         }
 
         .ci-bottom-rule { height:1px; background:var(--border); position:relative; z-index:2; }

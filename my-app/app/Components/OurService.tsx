@@ -278,7 +278,7 @@ export default function ServicesOverview(): JSX.Element {
         .sv-body {
           font-family: 'Cormorant Garamond', serif;
           font-size: clamp(1.15rem, 1.6vw, 1.35rem);
-          font-weight: 400; font-style: italic; line-height: 1.85;
+          font-weight: 600; font-style: italic; line-height: 1.85;
           color: var(--ink-body); margin-bottom: 22px; -webkit-font-smoothing: antialiased;
         }
         .sv-note {
@@ -395,7 +395,7 @@ export default function ServicesOverview(): JSX.Element {
         /* Subtitle — warm dark brown italic serif, matches About's body text */
         .sv-card-sub {
           font-family: 'Cormorant Garamond', serif;
-          font-style: italic; font-size: 1.1rem; font-weight: 400;
+          font-style: italic; font-size: 1.1rem; font-weight: 600;
           line-height: 1.75; color: var(--ink-body); display: block; margin-bottom: 26px;
           position: relative; z-index: 2; -webkit-font-smoothing: antialiased;
         }
@@ -459,7 +459,7 @@ export default function ServicesOverview(): JSX.Element {
         /* Italic serif sub — warm brown */
         .sv-cta-sub {
           font-family: 'Cormorant Garamond', serif; font-style: italic;
-          font-weight: 400; font-size: 1.15rem; line-height: 1.8;
+          font-weight: 600; font-size: 1.15rem; line-height: 1.8;
           color: var(--ink-body); max-width: 320px; text-align: right; -webkit-font-smoothing: antialiased;
         }
         @media (max-width: 760px) { .sv-cta-sub { text-align: left; } }
