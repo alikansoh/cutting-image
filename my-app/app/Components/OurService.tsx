@@ -1,44 +1,7 @@
 "use client";
-// window.gsap + ScrollTrigger types live in gsap.d.ts at the project root.
 
 import { JSX, useEffect, useRef } from "react";
 import Image from "next/image";
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  PERF CHANGES vs original:
-//
-//  1. @import removed — add font <link> tags to layout.tsx <head> instead.
-//     @import inside <style> is parser-blocking and directly hurts FCP.
-//
-//  2. GSAP + ScrollTrigger loaded in PARALLEL (Promise.all) instead of
-//     sequentially. Saves ~200 ms on slow connections.
-//
-//  3. IntersectionObserver gates GSAP load until section is 300 px from
-//     viewport — same pattern as AboutSection. GSAP never loads if the user
-//     never scrolls to this section.
-//
-//  4. clip-path card entrance replaced with CSS @keyframes. The JS version
-//     set clip-path: inset(0 100% 0 0) which blocked paint until GSAP ran.
-//     CSS animation fires immediately at paint time.
-//
-//  5. Card hover effects (line, title colour, cta) converted to pure CSS
-//     transitions — removes 8 GSAP.to calls per card from the init bundle.
-//     GSAP retained only for: magnetic tilt, icon float, parallax bar (all
-//     require runtime mouse/scroll data that CSS can't provide).
-//
-//  6. will-change trimmed to only elements that GSAP actively transforms.
-// ─────────────────────────────────────────────────────────────────────────────
-
-/*
-  Add to app/layout.tsx <head>:
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-    <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap"
-      media="print" onLoad="this.media='all'"
-    />
-*/
 
 interface Category {
   num: number;
@@ -135,8 +98,6 @@ export default function ServicesOverview(): JSX.Element {
   const loadGSAP = async (): Promise<void> => {
     if (hasLoaded.current) return;
     hasLoaded.current = true;
-
-    // ── Parallel load — saves ~200 ms vs sequential ──────────────────────────
     await Promise.all([
       loadScript("https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"),
       loadScript("https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"),
@@ -172,7 +133,7 @@ export default function ServicesOverview(): JSX.Element {
       { yPercent: 0, rotationX: 0, opacity: 1, stagger: 0.022, duration: 0.8, ease: "power3.out",
         scrollTrigger: { trigger: sec, start: "top 73%" } }
     );
-    gsap.fromTo(sec.querySelector(".sv-gold-word"),
+    gsap.fromTo(sec.querySelector(".sv-accent-word"),
       { yPercent: 110, opacity: 0 },
       { yPercent: 0, opacity: 1, duration: 0.8, delay: 0.22, ease: "power3.out",
         scrollTrigger: { trigger: sec, start: "top 73%" } }
@@ -185,13 +146,12 @@ export default function ServicesOverview(): JSX.Element {
         scrollTrigger: { trigger: sec.querySelector(".sv-header-right"), start: "top 74%" } }
     );
 
-    // ── Cards: magnetic tilt + icon float only (entrance is now CSS) ──
+    // ── Cards: magnetic tilt + icon float ──
     sec.querySelectorAll<HTMLElement>(".sv-card").forEach((card, i) => {
       const iconWrap = card.querySelector<HTMLElement>(".sv-icon-wrap");
       const inner    = card.querySelector<HTMLElement>(".sv-card-inner");
       const numEl    = card.querySelector<HTMLElement>(".sv-num");
 
-      // Icon float — infinite, decorative
       if (iconWrap) {
         gsap.to(iconWrap, {
           y: -6, duration: 2.2 + i * 0.3,
@@ -199,17 +159,16 @@ export default function ServicesOverview(): JSX.Element {
         });
       }
 
-      // Magnetic tilt on mousemove
       card.addEventListener("mousemove", (e: MouseEvent) => {
         const r = card.getBoundingClientRect();
         const x = ((e.clientX - r.left) / r.width  - 0.5) * 12;
         const y = ((e.clientY - r.top)  / r.height - 0.5) * 8;
-        gsap.to(inner,   { x, y, duration: 0.5, ease: "power2.out" });
+        gsap.to(inner,    { x, y, duration: 0.5, ease: "power2.out" });
         gsap.to(iconWrap, { x: x * 1.6, duration: 0.5, ease: "power2.out" });
         if (numEl) gsap.to(numEl, { x: x * -0.8, y: y * -0.8, duration: 0.5, ease: "power2.out" });
       });
       card.addEventListener("mouseleave", () => {
-        gsap.to(inner,   { x: 0, y: 0, duration: 0.7, ease: "elastic.out(1,0.5)" });
+        gsap.to(inner,    { x: 0, y: 0, duration: 0.7, ease: "elastic.out(1,0.5)" });
         gsap.to(iconWrap, { x: 0,       duration: 0.7, ease: "elastic.out(1,0.5)" });
         if (numEl) gsap.to(numEl, { x: 0, y: 0, duration: 0.7, ease: "elastic.out(1,0.5)" });
       });
@@ -222,7 +181,7 @@ export default function ServicesOverview(): JSX.Element {
         scrollTrigger: { trigger: sec.querySelector(".sv-cta"), start: "top 90%" } }
     );
 
-    // ── Gold bar parallax ──
+    // ── Side bar parallax ──
     gsap.to(sec.querySelector(".sv-vbar"), {
       y: -90, ease: "none",
       scrollTrigger: { trigger: sec, start: "top bottom", end: "bottom top", scrub: 2 },
@@ -232,39 +191,46 @@ export default function ServicesOverview(): JSX.Element {
   return (
     <>
       <style>{`
-        /* Fonts: moved to layout.tsx <head> — see comment at top of file */
-
         :root {
-          --gold:       #C9A84C;
-          --gold-light: #F0D878;
-          --gold-dim:   #6B4F16;
-          --ink:        #080705;
-          --ink2:       #0F0E0C;
-          --ink3:       #161410;
-          --warm:       #F0EAD6;
-          --muted:      #7A7060;
-          --border:     rgba(201,168,76,0.18);
+          --ivory:     #FAF7F2;
+          --ivory-s:   #F0EBE1;
+          --ivory-d:   #E6DDD0;
+          --ink:       #1A1208;
+          --ink-m:     #3D2E1A;
+          --ink-lt:    #5C4A36;
+          --ink-body:  #4A3828;
+          --cr:        #8B1A28;
+          --cr-b:      #B02235;
+          --cr-dim:    rgba(139,26,40,.12);
+          --nv:        #0E1E30;
+          --nv-b:      #1A3050;
+          --border:    rgba(139,26,40,.14);
         }
 
         .sv-section *, .sv-section *::before, .sv-section *::after {
           box-sizing: border-box; margin: 0; padding: 0;
         }
+
+        /* ── Base: ivory background, ink text ── */
         .sv-section {
-          background: var(--ink); color: var(--warm);
+          background: var(--ivory); color: var(--ink);
           font-family: 'DM Sans', sans-serif;
           position: relative; overflow: hidden;
         }
+
+        /* Subtle grain on ivory */
         .sv-section::before {
           content: ''; position: absolute; inset: 0;
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-          opacity: 0.04; pointer-events: none; z-index: 40;
+          opacity: 0.018; pointer-events: none; z-index: 40;
         }
 
+        /* Crimson side bar — parallaxes */
         .sv-vbar {
           position: absolute; left: 52px; top: -8%;
-          width: 1px; height: 118%;
-          background: linear-gradient(to bottom, transparent, var(--gold) 25%, var(--gold) 75%, transparent);
-          opacity: 0.28; pointer-events: none; z-index: 1;
+          width: 2px; height: 118%;
+          background: linear-gradient(to bottom, transparent, var(--cr) 25%, var(--cr) 75%, transparent);
+          opacity: 0.2; pointer-events: none; z-index: 1;
         }
 
         .sv-inner {
@@ -284,112 +250,119 @@ export default function ServicesOverview(): JSX.Element {
         .sv-eyebrow { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
         .sv-eyebrow-label {
           font-size: 10.5px; font-weight: 500;
-          letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold);
+          letter-spacing: 0.24em; text-transform: uppercase;
+          /* Crimson eyebrow label — matches About */
+          color: var(--cr);
         }
-        .sv-line { width: 72px; height: 1px; background: var(--gold); transform: scaleX(0); transform-origin: left; }
+        /* Crimson draw line */
+        .sv-line { width: 72px; height: 1px; background: var(--cr); transform: scaleX(0); transform-origin: left; }
 
+        /* Navy heading — matches About's .ci-heading-line */
         .sv-hline {
           display: block; overflow: hidden;
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(3.8rem, 9vw, 8.5rem); line-height: 0.92;
-          letter-spacing: 0.025em; color: var(--warm);
+          letter-spacing: 0.025em; color: var(--nv);
         }
-        .sv-gold-word {
+        /* Crimson-to-navy gradient accent — matches About's .ci-heading-accent */
+        .sv-accent-word {
           display: block; overflow: hidden;
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(3.8rem, 9vw, 8.5rem); line-height: 0.92; letter-spacing: 0.025em;
-          background: linear-gradient(110deg, var(--gold-dim) 0%, var(--gold) 28%, var(--gold-light) 50%, var(--gold) 72%, var(--gold-dim) 100%);
+          background: linear-gradient(110deg, #6E1020 0%, #8B1A28 28%, #C03050 50%, #8B1A28 72%, #6E1020 100%);
           -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
 
         .sv-header-right { padding-top: 12px; }
+        /* Italic serif body — matches About's .ci-body-text */
         .sv-body {
           font-family: 'Cormorant Garamond', serif;
           font-size: clamp(1.15rem, 1.6vw, 1.35rem);
-          font-weight: 600; font-style: italic; line-height: 1.85;
-          color: var(--warm); margin-bottom: 22px; -webkit-font-smoothing: antialiased;
+          font-weight: 400; font-style: italic; line-height: 1.85;
+          color: var(--ink-body); margin-bottom: 22px; -webkit-font-smoothing: antialiased;
         }
         .sv-note {
           display: block; font-size: 10px; font-weight: 500;
           letter-spacing: 0.2em; text-transform: uppercase;
-          color: var(--muted); margin-bottom: 30px;
+          color: var(--ink-lt); margin-bottom: 30px;
         }
+        /* Crimson CTA link — matches About's .ci-cta */
         .sv-link {
           display: inline-flex; align-items: center; gap: 12px;
           font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase;
-          color: var(--gold); text-decoration: none;
-          border-bottom: 1px solid rgba(201,168,76,0.4); padding-bottom: 5px;
+          color: var(--cr); text-decoration: none;
+          border-bottom: 1px solid rgba(139,26,40,0.35); padding-bottom: 5px;
           transition: gap .35s, color .3s, border-color .3s;
         }
-        .sv-link:hover { gap: 22px; color: var(--gold-light); border-color: var(--gold-light); }
+        .sv-link:hover { gap: 22px; color: #6E1020; border-color: #6E1020; }
         .sv-link svg { transition: transform .35s; }
         .sv-link:hover svg { transform: translateX(5px); }
 
         /* ── CARDS ── */
+        /* Grid separator uses crimson border tone */
         .sv-cards {
           display: grid; grid-template-columns: repeat(2, 1fr);
-          gap: 2px; background: rgba(201,168,76,0.1);
+          gap: 2px; background: var(--border);
         }
         @media (max-width: 800px) { .sv-cards { grid-template-columns: 1fr; } }
 
-        /*
-          CSS entrance animation replaces the GSAP clip-path wipe.
-          Cards are invisible by default; .sv-cards-ready (added after
-          IntersectionObserver fires) triggers the staggered fade-in.
-          Before JS loads the cards are visible via @media (prefers-reduced-motion)
-          fallback and the no-JS path.
-        */
         @keyframes svCardIn {
           from { opacity: 0; transform: translateY(32px); }
           to   { opacity: 1; transform: translateY(0); }
         }
 
+        /* Cards: ivory-s background — matches About's .ci-pillar */
         .sv-card {
-          background: var(--ink2); position: relative; overflow: hidden;
+          background: var(--ivory-s); position: relative; overflow: hidden;
           display: block; text-decoration: none; color: inherit; cursor: pointer;
-          /* start hidden; animation fires when parent gets .sv-cards-ready */
           opacity: 0;
           transition: background 0.5s ease;
         }
 
-        /* Stagger via nth-child — no JS needed */
         .sv-cards-ready .sv-card:nth-child(1) { animation: svCardIn 0.9s cubic-bezier(0.16,1,0.3,1) 0.05s both; }
         .sv-cards-ready .sv-card:nth-child(2) { animation: svCardIn 0.9s cubic-bezier(0.16,1,0.3,1) 0.18s both; }
         .sv-cards-ready .sv-card:nth-child(3) { animation: svCardIn 0.9s cubic-bezier(0.16,1,0.3,1) 0.31s both; }
         .sv-cards-ready .sv-card:nth-child(4) { animation: svCardIn 0.9s cubic-bezier(0.16,1,0.3,1) 0.44s both; }
 
-        /* Hover: CSS handles colour/line transitions — no GSAP needed */
+        /* Hover darkens to ivory-d — matches About's .ci-pillar:hover */
+        .sv-card:hover { background: var(--ivory-d); }
+
+        /* Crimson-to-navy bottom reveal bar — matches About's .ci-pillar::after */
         .sv-card-line {
-          position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
-          background: linear-gradient(to right, var(--gold), var(--gold-light));
+          position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+          background: linear-gradient(to right, var(--cr), var(--nv));
           transform: scaleX(0); transform-origin: left; z-index: 4;
           transition: transform 0.55s cubic-bezier(0.16,1,0.3,1);
         }
         .sv-card:hover .sv-card-line { transform: scaleX(1); }
-        .sv-card:hover { background: var(--ink3); }
-        .sv-card:hover .sv-card-title { color: var(--gold-light); }
-        .sv-card:hover .sv-cta-text { color: var(--gold-light); transform: translateX(6px); }
+
+        /* Title turns crimson on hover */
+        .sv-card:hover .sv-card-title { color: var(--cr-b); }
+        .sv-card:hover .sv-cta-text   { color: #6E1020; transform: translateX(6px); }
         .sv-card:hover .sv-arrow {
-          border-color: var(--gold);
-          background: rgba(201,168,76,0.12);
+          border-color: var(--cr);
+          background: var(--cr-dim);
           transform: translateX(6px);
         }
-        .sv-card:hover .sv-num { -webkit-text-stroke-color: rgba(201,168,76,0.24); }
+        /* Ghost number uses navy tint — matches About's .ci-pillar-bg-num */
+        .sv-card:hover .sv-num { -webkit-text-stroke-color: rgba(14,30,48,0.18); }
 
         .sv-card-inner {
           padding: 52px 48px 44px; position: relative; z-index: 2; will-change: transform;
         }
         @media (max-width: 700px) { .sv-card-inner { padding: 40px 28px 36px; } }
 
+        /* Large ghost number — navy tint, matches About */
         .sv-num {
           position: absolute; top: -10px; right: 28px;
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(6rem, 10vw, 10rem); line-height: 1; padding-top: 6px;
-          color: transparent; -webkit-text-stroke: 1px rgba(201,168,76,0.12);
+          color: transparent; -webkit-text-stroke: 1px rgba(14,30,48,0.07);
           pointer-events: none; user-select: none; z-index: 1; will-change: transform;
           transition: -webkit-text-stroke-color 0.4s;
         }
 
+        /* Icon wrap — crimson border tone */
         .sv-icon-wrap {
           width: 80px; height: 80px; border: 1px solid var(--border);
           display: flex; align-items: center; justify-content: center;
@@ -397,64 +370,73 @@ export default function ServicesOverview(): JSX.Element {
           transition: border-color 0.4s, background 0.4s;
         }
         .sv-card:hover .sv-icon-wrap {
-          border-color: rgba(201,168,76,0.55); background: rgba(201,168,76,0.07);
+          border-color: rgba(139,26,40,0.45); background: var(--cr-dim);
         }
+        /* Icon recoloured to crimson */
         .sv-icon-wrap img {
           width: 40px; height: 40px;
-          filter: invert(68%) sepia(28%) saturate(700%) hue-rotate(5deg) brightness(92%) contrast(90%);
+          filter: invert(14%) sepia(60%) saturate(900%) hue-rotate(330deg) brightness(80%) contrast(95%);
         }
 
+        /* Card title — navy, matches About's .ci-pillar-title */
         .sv-card-title {
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(1.65rem, 2.4vw, 2.1rem); letter-spacing: 0.06em;
-          color: var(--warm); line-height: 1.05; margin-bottom: 10px;
+          color: var(--nv); line-height: 1.05; margin-bottom: 10px;
           display: block; position: relative; z-index: 2;
           transition: color 0.3s ease;
         }
+        /* Crimson rule before title — matches About's .ci-pillar-title::before */
         .sv-card-title::before {
-          content: ''; display: block; width: 22px; height: 1px;
-          background: var(--gold); margin-bottom: 12px;
+          content: ''; display: block; width: 24px; height: 1px;
+          background: var(--cr); margin-bottom: 12px;
         }
 
+        /* Subtitle — warm dark brown italic serif, matches About's body text */
         .sv-card-sub {
           font-family: 'Cormorant Garamond', serif;
-          font-style: italic; font-size: 1.1rem; font-weight: 600;
-          line-height: 1.75; color: var(--warm); display: block; margin-bottom: 26px;
+          font-style: italic; font-size: 1.1rem; font-weight: 400;
+          line-height: 1.75; color: var(--ink-body); display: block; margin-bottom: 26px;
           position: relative; z-index: 2; -webkit-font-smoothing: antialiased;
         }
 
+        /* Service list */
         .sv-list {
           list-style: none; display: flex; flex-direction: column;
           gap: 8px; margin-bottom: 32px; position: relative; z-index: 2;
         }
         .sv-list li {
           font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
-          color: rgba(240,234,214,0.92); line-height: 1.5;
+          color: var(--ink-body); line-height: 1.5;
           display: flex; align-items: center; gap: 12px; -webkit-font-smoothing: antialiased;
         }
+        /* Crimson bullet line */
         .sv-list li::before {
           content: ''; width: 16px; height: 1px;
-          background: var(--gold); flex-shrink: 0; opacity: 0.7;
+          background: var(--cr); flex-shrink: 0; opacity: 0.7;
         }
 
+        /* Card footer */
         .sv-card-footer {
           display: flex; align-items: center; justify-content: space-between;
           padding-top: 24px; border-top: 1px solid var(--border);
           position: relative; z-index: 2;
         }
+        /* CTA text — crimson */
         .sv-cta-text {
           font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 600;
-          letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold);
+          letter-spacing: 0.24em; text-transform: uppercase; color: var(--cr);
           transition: color 0.3s ease, transform 0.3s ease;
         }
+        /* Arrow circle — crimson border */
         .sv-arrow {
-          width: 34px; height: 34px; border: 1px solid rgba(201,168,76,0.22);
+          width: 34px; height: 34px; border: 1px solid rgba(139,26,40,0.3);
           border-radius: 50%; display: flex; align-items: center; justify-content: center;
-          color: var(--gold); transition: border-color 0.35s, background 0.35s, transform 0.35s;
+          color: var(--cr); transition: border-color 0.35s, background 0.35s, transform 0.35s;
         }
         .sv-arrow svg { width: 12px; height: 12px; }
 
-        /* ── CTA ── */
+        /* ── CTA SECTION ── */
         .sv-cta {
           padding: 80px 0 100px; display: flex;
           align-items: center; justify-content: space-between;
@@ -464,36 +446,38 @@ export default function ServicesOverview(): JSX.Element {
 
         .sv-cta-overline {
           font-size: 10px; font-weight: 500; letter-spacing: 0.24em;
-          text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 10px;
+          text-transform: uppercase; color: var(--ink-lt); display: block; margin-bottom: 10px;
         }
+        /* Navy heading */
         .sv-cta-heading {
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(2.2rem, 4vw, 3.8rem); letter-spacing: 0.05em;
-          color: var(--warm); line-height: 1;
+          color: var(--nv); line-height: 1;
         }
         .sv-cta-right { display: flex; flex-direction: column; align-items: flex-end; gap: 20px; flex-shrink: 0; }
         @media (max-width: 760px) { .sv-cta-right { align-items: flex-start; } }
+        /* Italic serif sub — warm brown */
         .sv-cta-sub {
           font-family: 'Cormorant Garamond', serif; font-style: italic;
-          font-weight: 600; font-size: 1.15rem; line-height: 1.8;
-          color: var(--warm); max-width: 320px; text-align: right; -webkit-font-smoothing: antialiased;
+          font-weight: 400; font-size: 1.15rem; line-height: 1.8;
+          color: var(--ink-body); max-width: 320px; text-align: right; -webkit-font-smoothing: antialiased;
         }
         @media (max-width: 760px) { .sv-cta-sub { text-align: left; } }
 
+        /* CTA button — crimson fill, matches About's crimson accent */
         .sv-btn {
           display: inline-flex; align-items: center; gap: 14px;
-          background: var(--gold); color: var(--ink);
+          background: var(--cr); color: var(--ivory);
           font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600;
           letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none;
           padding: 18px 36px; transition: background .3s, gap .35s, transform .25s; white-space: nowrap;
         }
-        .sv-btn:hover { background: var(--gold-light); gap: 22px; transform: translateY(-2px); }
+        .sv-btn:hover { background: var(--cr-b); gap: 22px; transform: translateY(-2px); }
         .sv-btn svg { transition: transform .35s; }
         .sv-btn:hover svg { transform: translateX(5px); }
 
-        .sv-end-rule { height: 1px; background: rgba(255,255,255,0.07); position: relative; z-index: 2; }
+        .sv-end-rule { height: 1px; background: var(--border); position: relative; z-index: 2; }
 
-        /* Reduced motion — disable all animations, show cards immediately */
         @media (prefers-reduced-motion: reduce) {
           .sv-card { opacity: 1 !important; animation: none !important; }
           .sv-cards-ready .sv-card { animation: none; opacity: 1; }
@@ -512,7 +496,7 @@ export default function ServicesOverview(): JSX.Element {
               </div>
               <div>
                 <span className="sv-hline">The Art of</span>
-                <span className="sv-gold-word">Looking Sharp</span>
+                <span className="sv-accent-word">Looking Sharp</span>
               </div>
             </div>
             <div className="sv-header-right">
@@ -531,11 +515,6 @@ export default function ServicesOverview(): JSX.Element {
           </div>
         </div>
 
-        {/*
-          .sv-cards-ready is added by the IntersectionObserver in initCards()
-          which fires when the cards enter the viewport — triggering the CSS
-          stagger animation without any GSAP involvement.
-        */}
         <CardsGrid categories={CATEGORIES} sectionRef={sectionRef} />
 
         <div className="sv-inner">
@@ -566,8 +545,6 @@ export default function ServicesOverview(): JSX.Element {
 }
 
 // ── CardsGrid ──────────────────────────────────────────────────────────────────
-// Separated so it can manage its own IntersectionObserver for the CSS
-// entrance trigger (.sv-cards-ready) independently of the GSAP load.
 function CardsGrid({
   categories,
   sectionRef,
@@ -580,8 +557,6 @@ function CardsGrid({
   useEffect(() => {
     const grid = gridRef.current;
     if (!grid) return;
-
-    // Add .sv-cards-ready when grid enters viewport → triggers CSS stagger
     const obs = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
@@ -595,7 +570,6 @@ function CardsGrid({
     return () => obs.disconnect();
   }, []);
 
-  // Suppress the ref warning — sectionRef is passed for GSAP access in parent
   void sectionRef;
 
   return (

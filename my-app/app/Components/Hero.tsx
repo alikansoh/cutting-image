@@ -34,10 +34,9 @@ import { JSX, useEffect, useRef } from 'react'
 //     (actively animating) and scroll-dot. Fewer compositing layers = less
 //     GPU memory pressure on mobile.
 //
-//  7. gold-shimmer → gold-static already done in original; kept as-is.
+//  7. COLOR: Gold replaced with crimson palette matching About section.
+//     --cr: #8B1A28  --cr-b: #B02235  --cr-light: #C03050
 // ─────────────────────────────────────────────────────────────────────────────
-
-// window.gsap + ScrollTrigger types live in gsap.d.ts (project root)
 
 export default function Hero(): JSX.Element {
   const badgeRingRef = useRef<SVGSVGElement>(null)
@@ -45,8 +44,6 @@ export default function Hero(): JSX.Element {
   const hasLoaded    = useRef(false)
 
   useEffect(() => {
-    // Only load GSAP for the two decorative infinite animations.
-    // Everything else is CSS — no JS needed for entrance effects.
     if (hasLoaded.current) return
     hasLoaded.current = true
 
@@ -77,14 +74,12 @@ export default function Hero(): JSX.Element {
     const gsap = window.gsap
     if (!gsap) return
 
-    // Scroll dot bounce
     if (scrollDotRef.current) {
       gsap.to(scrollDotRef.current, {
         y: 10, repeat: -1, yoyo: true, duration: 0.9, ease: 'sine.inOut', delay: 0.5,
       })
     }
 
-    // Badge ring spin — skip on mobile
     if (window.innerWidth >= 640 && badgeRingRef.current) {
       gsap.to(badgeRingRef.current, {
         rotation: 360, repeat: -1, duration: 18, ease: 'none', transformOrigin: '50% 50%',
@@ -96,10 +91,11 @@ export default function Hero(): JSX.Element {
     <>
       <style>{`
         :root {
-          --gold:       #C9A84C;
-          --gold-light: #F0D878;
-          --gold-dim:   #6B4F16;
-          --ink:        #080705;
+          --cr:        #8B1A28;
+          --cr-b:      #B02235;
+          --cr-light:  #C03050;
+          --cr-dim:    #6E1020;
+          --ink:       #080705;
         }
 
         .font-bebas { font-family: 'Bebas Neue', sans-serif; }
@@ -113,8 +109,9 @@ export default function Hero(): JSX.Element {
           opacity: 0.04; pointer-events: none; z-index: 5;
         }
 
-        .gold-static {
-          background: linear-gradient(110deg, #6B4F16 0%, #C9A84C 28%, #F0D878 50%, #C9A84C 72%, #6B4F16 100%);
+        /* Crimson gradient accent — mirrors About's .ci-heading-accent */
+        .cr-static {
+          background: linear-gradient(110deg, #6E1020 0%, #8B1A28 28%, #C03050 50%, #8B1A28 72%, #6E1020 100%);
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -142,7 +139,6 @@ export default function Hero(): JSX.Element {
           to   { opacity: 1; transform: scale(1) rotate(0deg); }
         }
 
-        /* Apply: all elements animate in via CSS, no JS needed */
         .anim-video   { animation: fadeIn   1.2s ease-out both; }
         .anim-overlay { animation: fadeIn   1.0s ease-out 0.2s both; }
         .anim-line-l  { animation: scaleInLeft  0.9s cubic-bezier(0.16,1,0.3,1) 0.4s both; }
@@ -156,7 +152,6 @@ export default function Hero(): JSX.Element {
         .anim-badge   { animation: popIn    0.8s cubic-bezier(0.34,1.56,0.64,1) 1.2s both; }
         .anim-scroll  { animation: fadeUp   0.6s ease-out 1.3s both; }
 
-        /* Respect reduced motion */
         @media (prefers-reduced-motion: reduce) {
           .anim-video, .anim-overlay, .anim-line-l, .anim-line-r,
           .anim-tag, .anim-h1, .anim-sub, .anim-cta-1, .anim-cta-2,
@@ -165,24 +160,26 @@ export default function Hero(): JSX.Element {
           }
         }
 
+        /* Primary CTA — crimson fill */
         .btn-primary {
           clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
           transition: background 0.3s, transform 0.25s, box-shadow 0.3s;
         }
         .btn-primary:hover {
-          background: #F0D878 !important;
+          background: var(--cr-b) !important;
           transform: translateY(-2px);
-          box-shadow: 0 10px 40px rgba(201,168,76,0.45);
+          box-shadow: 0 10px 40px rgba(139,26,40,0.45);
         }
 
+        /* Secondary CTA — crimson border */
         .btn-secondary {
           clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
-          border: 1px solid rgba(201,168,76,0.4);
+          border: 1px solid rgba(139,26,40,0.45);
           transition: border-color 0.3s, background 0.3s, transform 0.25s;
         }
         .btn-secondary:hover {
-          border-color: #C9A84C;
-          background: rgba(201,168,76,0.07);
+          border-color: var(--cr);
+          background: rgba(139,26,40,0.1);
           transform: translateY(-2px);
         }
 
@@ -194,14 +191,15 @@ export default function Hero(): JSX.Element {
 
         .badge-text {
           font-family: 'DM Sans', sans-serif;
-          font-size: 6.2px; fill: #C9A84C;
+          font-size: 6.2px; fill: var(--cr-b);
           letter-spacing: 3.4px; text-transform: uppercase;
         }
 
+        /* Stat numbers — crimson gradient */
         .stat-num {
           font-family: 'Bebas Neue', sans-serif;
           font-size: 2.1rem; line-height: 1;
-          background: linear-gradient(120deg, #C9A84C, #F0D878);
+          background: linear-gradient(120deg, #8B1A28, #C03050);
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -216,12 +214,6 @@ export default function Hero(): JSX.Element {
 
       <section className="relative w-full h-screen min-h-[640px] overflow-hidden grain">
 
-        {/*
-          KEY PERF CHANGE: preload="none" stops the browser fetching video bytes
-          during the critical load window. The poster (an image) is the real LCP
-          candidate and loads fast. Video starts buffering once the page is idle.
-          On slow 4G this alone saves ~500–800ms of LCP.
-        */}
         <video
           className="absolute inset-0 w-full h-full object-cover z-0 anim-video"
           src="/hero.mp4"
@@ -236,18 +228,18 @@ export default function Hero(): JSX.Element {
           fetchPriority="high"
         />
 
-        {/* Overlays */}
+        {/* Overlays — subtle crimson tint at bottom-left instead of gold */}
         <div className="absolute inset-0 z-10 pointer-events-none anim-overlay">
           <div className="absolute inset-0 bg-[rgba(5,4,3,0.72)]" />
           <div className="absolute inset-0 bg-linear-to-r from-[rgba(5,4,3,0.88)] via-transparent to-transparent" />
           <div className="absolute inset-0 bg-linear-to-t from-[rgba(5,4,3,0.92)] via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 w-150 h-100 bg-[radial-gradient(ellipse_at_bottom_left,rgba(201,168,76,0.1)_0%,transparent_70%)]" />
+          <div className="absolute bottom-0 left-0 w-150 h-100 bg-[radial-gradient(ellipse_at_bottom_left,rgba(139,26,40,0.12)_0%,transparent_70%)]" />
         </div>
 
-        {/* Horizontal gold lines */}
+        {/* Horizontal crimson lines */}
         <div className="absolute top-1/2 -translate-y-1/2 inset-x-0 z-20 flex items-center pointer-events-none px-6 md:px-10 gap-6">
-          <span className="block h-px flex-1 bg-linear-to-r from-transparent via-[rgba(201,168,76,0.3)] to-[rgba(201,168,76,0.1)] anim-line-l" />
-          <span className="block h-px flex-1 bg-linear-to-l from-transparent via-[rgba(201,168,76,0.3)] to-[rgba(201,168,76,0.1)] anim-line-r" />
+          <span className="block h-px flex-1 bg-linear-to-r from-transparent via-[rgba(139,26,40,0.35)] to-[rgba(139,26,40,0.12)] anim-line-l" />
+          <span className="block h-px flex-1 bg-linear-to-l from-transparent via-[rgba(139,26,40,0.35)] to-[rgba(139,26,40,0.12)] anim-line-r" />
         </div>
 
         {/* Main content */}
@@ -255,8 +247,8 @@ export default function Hero(): JSX.Element {
 
           {/* Eyebrow */}
           <div className="flex items-center gap-3 md:gap-4 pt-8 md:pt-10 mb-4 md:mb-6">
-            <span className="w-6 md:w-8 h-px bg-[#C9A84C]" aria-hidden="true" />
-            <p className="font-dm text-[0.55rem] md:text-[0.6rem] tracking-[0.3em] md:tracking-[0.38em] uppercase text-[#C9A84C] anim-tag">
+            <span className="w-6 md:w-8 h-px bg-[#8B1A28]" aria-hidden="true" />
+            <p className="font-dm text-[0.55rem] md:text-[0.6rem] tracking-[0.3em] md:tracking-[0.38em] uppercase text-[#B02235] anim-tag">
               Cutting Image &nbsp;·&nbsp; Premium Barbershop &nbsp;·&nbsp; Staines
             </p>
           </div>
@@ -267,7 +259,7 @@ export default function Hero(): JSX.Element {
             className="font-bebas text-[clamp(3.2rem,9vw,9.5rem)] leading-[0.92] tracking-[0.03em] text-white mb-4 md:mb-5 max-w-[90vw] md:max-w-[680px] lg:max-w-[820px] anim-h1"
           >
             Where{' '}
-            <em className="gold-static not-italic">Style</em>
+            <em className="cr-static not-italic">Style</em>
             <br />
             Meets{' '}
             <span className="text-white/90">Precision</span>
@@ -286,7 +278,7 @@ export default function Hero(): JSX.Element {
           <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 md:gap-4">
             <Link
               href="/booking"
-              className="btn-primary inline-flex items-center gap-2.5 font-dm text-[0.65rem] md:text-[0.7rem] font-semibold tracking-[0.22em] uppercase bg-[#C9A84C] text-[#080705] px-6 md:px-8 py-3.5 md:py-4 anim-cta-1"
+              className="btn-primary inline-flex items-center gap-2.5 font-dm text-[0.65rem] md:text-[0.7rem] font-semibold tracking-[0.22em] uppercase bg-[#8B1A28] text-white px-6 md:px-8 py-3.5 md:py-4 anim-cta-1"
             >
               Book Appointment
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -320,7 +312,7 @@ export default function Hero(): JSX.Element {
           </div>
         </div>
 
-        {/* Rotating badge — will-change only on the SVG that GSAP spins */}
+        {/* Rotating badge — crimson ring text */}
         <div
           className="hidden sm:flex absolute bottom-20 md:bottom-24 right-6 md:right-10 lg:right-16 z-30 w-[90px] h-[90px] md:w-[110px] md:h-[110px] items-center justify-center anim-badge"
           aria-hidden="true"
@@ -338,12 +330,13 @@ export default function Hero(): JSX.Element {
               <textPath href="#badgePath">CUTTING IMAGE · STAINES · PREMIUM GROOMING · &nbsp;</textPath>
             </text>
           </svg>
-          <div className="w-8 h-8 md:w-9 md:h-9 border border-[rgba(201,168,76,0.5)] rotate-45 flex items-center justify-center">
-            <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-[#C9A84C]" />
+          {/* Diamond icon — crimson fill */}
+          <div className="w-8 h-8 md:w-9 md:h-9 border border-[rgba(139,26,40,0.6)] rotate-45 flex items-center justify-center">
+            <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-[#8B1A28]" />
           </div>
         </div>
 
-        {/* Scroll indicator */}
+        {/* Scroll indicator — crimson dot */}
         <div
           className="absolute bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 anim-scroll"
           aria-hidden="true"
@@ -351,7 +344,7 @@ export default function Hero(): JSX.Element {
           <div className="w-px h-10 md:h-12 relative overflow-hidden bg-white/10">
             <span
               ref={scrollDotRef}
-              className="scroll-dot absolute top-0 left-0 right-0 h-5 bg-gradient-to-b from-[#C9A84C] to-transparent"
+              className="scroll-dot absolute top-0 left-0 right-0 h-5 bg-gradient-to-b from-[#8B1A28] to-transparent"
               style={{ willChange: 'transform' }}
             />
           </div>
