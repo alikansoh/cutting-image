@@ -3,9 +3,6 @@
 import Image from "next/image";
 import { JSX, useEffect, useRef, useState } from "react";
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  TYPES
-// ─────────────────────────────────────────────────────────────────────────────
 interface Offer {
   id: string;
   tag: string;
@@ -16,13 +13,10 @@ interface Offer {
   expiry?: string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  FIXED OFFER
-// ─────────────────────────────────────────────────────────────────────────────
 const FIXED_OFFER: Offer = {
   id: "grooming-package",
   tag: "Special Offer",
-  title: "The\nGrooming\nPackage",
+  title: "The Grooming Package",
   description:
     "Everything a gentleman needs in one appointment. Our signature all-in grooming ritual — looking and feeling your absolute best.",
   price: "£44",
@@ -35,13 +29,10 @@ const FIXED_OFFER: Offer = {
   expiry: "Ongoing",
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  DYNAMIC OFFER — driven by your internal system
-// ─────────────────────────────────────────────────────────────────────────────
 const FALLBACK_DYNAMIC: Offer = {
   id: "dynamic",
   tag: "Limited Time",
-  title: "The\nGentleman\nPackage",
+  title: "The Gentleman Package",
   description:
     "Our most complete grooming ritual. Cut, beard, hot shave — the full experience for the discerning man.",
   price: "£70",
@@ -49,28 +40,23 @@ const FALLBACK_DYNAMIC: Offer = {
     "Signature Cut",
     "Beard Sculpt",
     "Hot Towel Shave",
-    "Complimentary drink",
+    "Complimentary Drink",
   ],
   expiry: "Ends 31 Mar",
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
 export default function OffersSection(): JSX.Element {
-  const sectionRef   = useRef<HTMLElement>(null);
-  const hasAnimated  = useRef(false);
-  const hasLoaded    = useRef(false);
+  const sectionRef  = useRef<HTMLElement>(null);
+  const hasAnimated = useRef(false);
+  const hasLoaded   = useRef(false);
   const [dynamicOffer, setDynamicOffer] = useState<Offer>(FALLBACK_DYNAMIC);
 
   useEffect(() => {
-    // ── Connect your internal system here ──
     // const res  = await fetch("/api/offers/current");
     // const data = await res.json();
     // setDynamicOffer(data);
   }, []);
 
-  // ── GSAP — lazy-load only when section is near viewport ─────────────────
   useEffect(() => {
     const node = sectionRef.current;
     if (!node) return;
@@ -113,17 +99,13 @@ export default function OffersSection(): JSX.Element {
     const sec = sectionRef.current;
     if (!sec) return;
 
-    const isMobile = window.innerWidth < 768;
-
-    // Eyebrow line draw
     gsap.fromTo(sec.querySelector(".of-line"),
       { scaleX: 0 },
       { scaleX: 1, duration: 1.4, ease: "power3.out", transformOrigin: "left",
         scrollTrigger: { trigger: sec, start: "top 78%" } }
     );
 
-    if (!isMobile) {
-      // Heading chars — skip on mobile (reduces forced-reflow & TBT)
+    if (window.innerWidth >= 768) {
       sec.querySelectorAll<HTMLElement>(".of-hline").forEach((line) => {
         line.innerHTML = (line.textContent ?? "").split("").map((c) =>
           c.trim() === ""
@@ -149,51 +131,12 @@ export default function OffersSection(): JSX.Element {
         scrollTrigger: { trigger: sec.querySelector(".of-header"), start: "top 72%" } }
     );
 
-    // Cards entrance
-    gsap.fromTo(sec.querySelectorAll(".of-card"),
-      { y: 70, opacity: 0 },
-      { y: 0, opacity: 1, stagger: 0.2, duration: 1.1, ease: "expo.out",
+    gsap.fromTo(sec.querySelectorAll(".of-card-dark, .of-card-light"),
+      { y: 60, opacity: 0 },
+      { y: 0, opacity: 1, stagger: 0.18, duration: 1.1, ease: "expo.out",
         scrollTrigger: { trigger: sec.querySelector(".of-grid"), start: "top 84%" } }
     );
 
-    // Card hover bar + title colour — desktop only
-    if (!isMobile) {
-      sec.querySelectorAll<HTMLElement>(".of-card").forEach((card) => {
-        const bar   = card.querySelector<HTMLElement>(".of-card-bar");
-        const title = card.querySelector<HTMLElement>(".of-card-title");
-        gsap.fromTo(bar, { scaleX: 0 }, { scaleX: 0 }); // init only
-        card.addEventListener("mouseenter", () => {
-          gsap.to(bar,   { scaleX: 1, duration: 0.55, ease: "expo.out", transformOrigin: "left" });
-          gsap.to(title, { x: 5, color: "#F0D878", duration: 0.3 });
-        });
-        card.addEventListener("mouseleave", () => {
-          gsap.to(bar,   { scaleX: 0, duration: 0.4, ease: "power3.inOut", transformOrigin: "right" });
-          gsap.to(title, { x: 0, color: "#F0EAD6", duration: 0.35 });
-        });
-      });
-
-      // Tilt + spotlight on fixed card
-      const fixedCard = sec.querySelector<HTMLElement>(".of-card-fixed");
-      if (fixedCard) {
-        fixedCard.addEventListener("mousemove", (e: MouseEvent) => {
-          const r = fixedCard.getBoundingClientRect();
-          const x = e.clientX - r.left, y = e.clientY - r.top;
-          const spot = fixedCard.querySelector<HTMLElement>(".of-spotlight");
-          if (spot) spot.style.background = `radial-gradient(380px circle at ${x}px ${y}px, rgba(201,168,76,0.10) 0%, transparent 70%)`;
-          gsap.to(fixedCard, {
-            rotateX: (y / r.height - 0.5) * -5, rotateY: (x / r.width - 0.5) * 8,
-            duration: 0.5, ease: "power2.out", transformPerspective: 1000,
-          });
-        });
-        fixedCard.addEventListener("mouseleave", () => {
-          const spot = fixedCard.querySelector<HTMLElement>(".of-spotlight");
-          if (spot) spot.style.background = "transparent";
-          gsap.to(fixedCard, { rotateX: 0, rotateY: 0, duration: 0.8, ease: "elastic.out(1,0.6)" });
-        });
-      }
-    }
-
-    // Price count-up
     sec.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
       const raw = el.dataset.count ?? "";
       if (raw.startsWith("£")) {
@@ -207,83 +150,61 @@ export default function OffersSection(): JSX.Element {
       }
     });
 
-    // Pulsing expiry badges
-    sec.querySelectorAll<HTMLElement>(".of-expiry").forEach((b) =>
-      gsap.to(b, { scale: 1.04, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: -1 })
+    const card1 = sec.querySelector<HTMLElement>(".of-card-dark");
+    const img1  = card1?.querySelector<HTMLImageElement>(".of-hero-img");
+    if (card1 && img1) {
+      card1.addEventListener("mouseenter", () => gsap.to(img1, { scale: 1.05, duration: 0.8, ease: "power2.out" }));
+      card1.addEventListener("mouseleave", () => gsap.to(img1, { scale: 1,    duration: 0.8, ease: "power2.out" }));
+    }
+
+    gsap.fromTo(sec.querySelector(".of-banner"),
+      { y: 40, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1, ease: "power3.out",
+        scrollTrigger: { trigger: sec.querySelector(".of-banner"), start: "top 90%" } }
     );
 
-    // Parallax decorations — desktop only (no compositor layer benefit on small screens)
-    if (!isMobile) {
-      gsap.to(sec.querySelector(".of-vbar"), {
-        y: -80, ease: "none",
-        scrollTrigger: { trigger: sec, start: "top bottom", end: "bottom top", scrub: 2 },
-      });
-      gsap.to(sec.querySelector(".of-stripe"), {
-        y: 60, ease: "none",
-        scrollTrigger: { trigger: sec, start: "top bottom", end: "bottom top", scrub: 1.5 },
-      });
-    }
+    gsap.to(sec.querySelector(".of-vbar"), {
+      y: -80, ease: "none",
+      scrollTrigger: { trigger: sec, start: "top bottom", end: "bottom top", scrub: 2 },
+    });
   };
 
   return (
     <>
-      {/*
-        PERF FIXES applied here vs original:
-
-        1. REMOVED @import url(Google Fonts) from inside <style>.
-           That caused a render-blocking extra network round-trip.
-           Fonts are now injected via AboutSection's injectFontPreloads()
-           which runs before this component mounts (shared page-level call).
-           If OffersSection is used standalone, add the same injectFontPreloads
-           call in a useEffect here.
-
-        2. FIXED non-composited shimmer animation.
-           Old: animates `background-position` → triggers paint on every frame.
-           New: a pseudo-element slides via `transform:translateX` → GPU composited,
-           zero paint cost, no CLS impact.
-
-        3. GSAP lazy-loaded only when section is near viewport via IntersectionObserver.
-
-        4. Heavy per-char heading split and all hover listeners are skipped on mobile
-           (window.innerWidth < 768) — reduces TBT significantly.
-
-        5. Parallax scrub animations skipped on mobile — saves ~20 ms main-thread per scroll.
-      */}
       <style>{`
         :root {
-          --gold:       #C9A84C;
-          --gold-light: #F0D878;
-          --gold-dim:   #6B4F16;
-          --ink:        #080705;
-          --ink2:       #0F0E0C;
-          --ink3:       #161410;
-          --warm:       #F0EAD6;
-          --muted:      #7A7060;
-          --border:     rgba(201,168,76,0.18);
+          --cream:       #F5F1E8;
+          --cream-s:     #EDE7D6;
+          --cream-d:     #E3D9C5;
+          --charcoal:    #1C1C1C;
+          --charcoal-lt: #5A5A5A;
+          --charcoal-bd: #4A4A4A;
+          --gold:        #C9A227;
+          --gold-b:      #E0B83A;
+          --border:      rgba(201,162,39,0.18);
         }
-        .of-section *, .of-section *::before, .of-section *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .of-section *, .of-section *::before, .of-section *::after {
+          box-sizing: border-box; margin: 0; padding: 0;
+        }
+
         .of-section {
-          background: var(--ink); color: var(--warm);
+          background: var(--cream); color: var(--charcoal);
           font-family: 'DM Sans', sans-serif;
           position: relative; overflow: hidden;
         }
         .of-section::before {
           content: ''; position: absolute; inset: 0;
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-          opacity: 0.04; pointer-events: none; z-index: 40;
+          opacity: 0.018; pointer-events: none; z-index: 40;
         }
-        .of-stripe {
-          position: absolute; top: 30%; left: -10%;
-          width: 130%; height: 320px;
-          background: linear-gradient(to right, transparent 0%, rgba(201,168,76,0.025) 40%, rgba(201,168,76,0.025) 60%, transparent 100%);
-          transform: rotate(-6deg); pointer-events: none; z-index: 0;
-        }
+
         .of-vbar {
-          position: absolute; left: 52px; top: -8%;
-          width: 1px; height: 118%;
+          position: absolute; left: 52px; top: -8%; width: 2px; height: 118%;
           background: linear-gradient(to bottom, transparent, var(--gold) 25%, var(--gold) 75%, transparent);
-          opacity: 0.28; pointer-events: none; z-index: 1;
+          opacity: 0.2; pointer-events: none; z-index: 1;
         }
+
         .of-inner { max-width: 1360px; margin: 0 auto; padding: 0 88px; position: relative; z-index: 2; }
         @media (max-width: 960px) { .of-inner { padding: 0 28px; } .of-vbar { display: none; } }
 
@@ -293,144 +214,210 @@ export default function OffersSection(): JSX.Element {
           gap: 100px; align-items: end; border-bottom: 1px solid var(--border);
         }
         @media (max-width: 960px) { .of-header { grid-template-columns: 1fr; gap: 40px; padding: 80px 0 60px; } }
+
         .of-eyebrow { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
         .of-eyebrow-label { font-size: 10.5px; font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); }
         .of-line { width: 72px; height: 1px; background: var(--gold); transform: scaleX(0); }
+
         .of-hline {
           display: block; overflow: hidden; font-family: 'Bebas Neue', sans-serif;
-          font-size: clamp(3.8rem, 9vw, 8.5rem); line-height: 0.92; letter-spacing: 0.025em; color: var(--warm);
+          font-size: clamp(3.8rem, 9vw, 8.5rem); line-height: 0.92;
+          letter-spacing: 0.025em; color: var(--charcoal);
         }
         .of-head-gold {
           display: block; overflow: hidden; font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(3.8rem, 9vw, 8.5rem); line-height: 0.92; letter-spacing: 0.025em;
-          background: linear-gradient(110deg, var(--gold-dim) 0%, var(--gold) 28%, var(--gold-light) 50%, var(--gold) 72%, var(--gold-dim) 100%);
-          -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+          color: var(--gold);
         }
         .of-header-right { padding-bottom: 4px; }
         .of-header-body {
           font-family: 'Cormorant Garamond', serif; font-size: clamp(1.15rem, 1.6vw, 1.35rem);
-          font-weight: 600; font-style: italic; line-height: 1.85; color: var(--warm);
+          font-weight: 600; font-style: italic; line-height: 1.85; color: var(--charcoal-bd);
           margin-bottom: 28px; -webkit-font-smoothing: antialiased;
         }
-        .of-header-note { font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); display: block; }
+        .of-header-note { font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--charcoal-lt); display: block; }
 
-        /* ── TWO-CARD GRID ── */
-        .of-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: rgba(201,168,76,0.1); }
-        @media (max-width: 860px) { .of-grid { grid-template-columns: 1fr; } }
+        /* ── CARD GRID ── */
+        .of-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 60px 0 0; }
+        @media (max-width: 860px) { .of-grid { grid-template-columns: 1fr; gap: 20px; } }
 
-        /* ── SHARED CARD ── */
-        .of-card {
-          background: var(--ink2); position: relative; overflow: hidden;
-          display: flex; flex-direction: column; min-height: 700px;
-          transform-style: preserve-3d; transition: background 0.4s;
+        /* ═══════════════════════════════════════════
+           CARD 1 — DARK HERO CARD (charcoal)
+        ═══════════════════════════════════════════ */
+        .of-card-dark {
+          background: var(--charcoal); position: relative; overflow: hidden;
+          display: flex; flex-direction: column;
+          transition: box-shadow 0.4s;
         }
-        .of-card:hover { background: var(--ink3); }
-        .of-card-bar {
-          position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
-          background: linear-gradient(to right, var(--gold), var(--gold-light));
-          transform: scaleX(0); transform-origin: left; z-index: 3;
-        }
-        .of-spotlight { position: absolute; inset: 0; pointer-events: none; z-index: 1; transition: background 0.1s; }
+        .of-card-dark:hover { box-shadow: 0 28px 80px rgba(28,28,28,0.28); }
 
-        /*
-          FIX: shimmer now uses a translateX pseudo-element instead of
-          background-position — fully composited, no paint on every frame.
-        */
-        .of-shimmer {
-          position: absolute; inset: 0; overflow: hidden;
-          pointer-events: none; z-index: 1;
-        }
-        .of-shimmer::after {
-          content: '';
-          position: absolute; inset: 0;
-          background: linear-gradient(105deg, transparent 35%, rgba(201,168,76,0.07) 50%, transparent 65%);
-          /* translateX(-100%) → translateX(100%) is fully composited */
-          animation: ofShimmer 5s ease infinite;
-          will-change: transform;
-        }
-        @keyframes ofShimmer {
-          0%   { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-
-        .of-ghost {
-          position: absolute; bottom: -20px; right: -16px;
-          font-family: 'Bebas Neue', sans-serif; font-size: clamp(7rem, 14vw, 13rem);
-          line-height: 0.85; color: transparent;
-          -webkit-text-stroke: 1px rgba(201,168,76,0.07);
-          pointer-events: none; user-select: none; z-index: 0; white-space: nowrap;
-        }
-
-        /* ── HERO IMAGE ── */
-        .of-image-wrap { position: relative; width: 100%; height: 280px; overflow: hidden; flex-shrink: 0; }
-        .of-image-wrap > span, .of-image-wrap img { transition: transform 0.8s ease !important; }
-        .of-card:hover .of-image-wrap img { transform: scale(1.04) !important; }
-        .of-image-wrap::after {
+        /* Full-bleed photo */
+        .of-dark-img { position: relative; width: 100%; height: 300px; overflow: hidden; flex-shrink: 0; }
+        .of-hero-img { object-fit: cover; transition: transform 0.8s ease !important; }
+        .of-dark-img::after {
           content: ''; position: absolute; inset: 0; z-index: 1;
-          background: linear-gradient(to bottom, transparent 30%, rgba(15,14,12,0.55) 65%, var(--ink2) 100%);
+          background: linear-gradient(to bottom, transparent 20%, rgba(28,28,28,0.4) 60%, var(--charcoal) 100%);
         }
-        .of-image-wrap::before {
-          content: ''; position: absolute; inset: 0;
-          background: rgba(201,168,76,0.05); z-index: 2; pointer-events: none;
-        }
-        .of-price-badge {
-          position: absolute; bottom: -1px; left: 48px; z-index: 3;
-          background: var(--gold); padding: 10px 22px; display: flex; flex-direction: column; gap: 0;
-        }
-        .of-price-badge-from { font-size: 8px; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(8,7,5,0.6); }
-        .of-price-badge-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; line-height: 0.9; color: var(--ink); }
 
-        /* ── CARD BODY ── */
-        .of-card-body { padding: 40px 48px 48px; display: flex; flex-direction: column; flex: 1; position: relative; z-index: 2; }
-        @media (max-width: 700px) { .of-card-body { padding: 32px 26px 40px; } }
-        .of-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
-        .of-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ink); background: var(--gold); padding: 6px 14px; display: inline-block; }
-        .of-tag-outline { font-size: 9px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold); padding: 6px 14px; display: inline-block; }
-        .of-expiry { font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-light); border: 1px solid rgba(240,216,120,0.35); padding: 6px 12px; display: inline-block; white-space: nowrap; }
-        .of-card-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 5.5vw, 5rem); letter-spacing: 0.03em; color: var(--warm); line-height: 0.9; margin-bottom: 20px; white-space: pre-line; }
-        .of-card-title::before { content: ''; display: block; width: 26px; height: 2px; background: var(--gold); margin-bottom: 16px; }
-        .of-card-desc { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 600; font-style: italic; line-height: 1.8; color: var(--warm); margin-bottom: 32px; max-width: 380px; -webkit-font-smoothing: antialiased; }
-        .of-includes { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-        .of-includes li { display: flex; align-items: center; gap: 14px; font-family: 'DM Sans', sans-serif; font-size: 0.92rem; font-weight: 500; color: rgba(240,234,214,0.92); -webkit-font-smoothing: antialiased; }
-        .of-includes li::before { content: ''; width: 20px; height: 1px; background: linear-gradient(to right, var(--gold), var(--gold-light)); flex-shrink: 0; }
-
-        /* ── PRICE FOOTER ── */
-        .of-price-footer { margin-top: auto; padding-top: 32px; border-top: 1px solid var(--border); display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
-        .of-price-stack { display: flex; flex-direction: column; gap: 2px; }
-        .of-price-label { font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
-        .of-price-num {
-          font-family: 'Bebas Neue', sans-serif; font-size: clamp(3.2rem, 4.5vw, 4.5rem);
-          line-height: 0.9; letter-spacing: 0.02em;
-          background: linear-gradient(110deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
-          -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        /* Gold price chip at photo/body junction */
+        .of-dark-price-chip {
+          position: absolute; bottom: -1px; right: 40px; z-index: 3;
+          background: var(--gold); padding: 12px 24px 10px;
+          display: flex; flex-direction: column; align-items: flex-start;
         }
-        .of-price-pill { display: inline-block; background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.3); font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-light); padding: 5px 12px; margin-top: 4px; align-self: flex-start; }
-        .of-walkin { display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+        .of-dpc-label { font-size: 7.5px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(28,28,28,0.5); }
+        .of-dpc-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.6rem; line-height: 0.88; color: var(--charcoal); }
+
+        /* Dark body */
+        .of-dark-body { padding: 36px 40px 44px; display: flex; flex-direction: column; flex: 1; position: relative; z-index: 2; }
+        @media (max-width: 700px) { .of-dark-body { padding: 28px 24px 36px; } }
+
+        .of-dark-tag-row { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+        .of-tag-solid { font-size: 8.5px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: var(--charcoal); background: var(--gold); padding: 5px 12px; display: inline-block; }
+        .of-expiry-light { font-size: 8.5px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(201,162,39,0.7); border: 1px solid rgba(201,162,39,0.28); padding: 5px 12px; display: inline-block; }
+
+        .of-dark-title {
+          font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.4rem, 4vw, 3.8rem);
+          letter-spacing: 0.04em; color: var(--cream); line-height: 0.95; margin-bottom: 16px;
+        }
+        .of-dark-title::before { content: ''; display: block; width: 28px; height: 2px; background: var(--gold); margin-bottom: 14px; }
+
+        .of-dark-desc {
+          font-family: 'Cormorant Garamond', serif; font-size: 1.08rem; font-weight: 600;
+          font-style: italic; line-height: 1.8; color: rgba(245,241,232,0.6);
+          margin-bottom: 28px; -webkit-font-smoothing: antialiased;
+        }
+
+        .of-dark-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+        .of-dark-list li { display: flex; align-items: center; gap: 12px; font-size: 0.88rem; font-weight: 500; color: rgba(245,241,232,0.78); -webkit-font-smoothing: antialiased; }
+        .of-dark-list li::before { content: ''; width: 18px; height: 1px; background: linear-gradient(to right, var(--gold), var(--gold-b)); flex-shrink: 0; }
+
+        .of-dark-footer {
+          margin-top: auto; padding-top: 28px; border-top: 1px solid rgba(201,162,39,0.14);
+          display: flex; align-items: center; justify-content: space-between;
+        }
+        .of-walkin { display: flex; align-items: center; gap: 8px; font-size: 9.5px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(245,241,232,0.3); }
         .of-walkin::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; animation: walkinPulse 2s ease-in-out infinite; }
-        @keyframes walkinPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(1.5); } }
+        @keyframes walkinPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.5); } }
+
+        .of-dark-cta {
+          display: inline-flex; align-items: center; gap: 10px;
+          font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+          color: var(--gold); text-decoration: none;
+          border-bottom: 1px solid rgba(201,162,39,0.3); padding-bottom: 4px;
+          transition: gap 0.3s, color 0.3s, border-color 0.3s;
+        }
+        .of-dark-cta:hover { gap: 16px; color: var(--gold-b); border-color: var(--gold-b); }
+        .of-dark-cta svg { transition: transform 0.3s; }
+        .of-dark-cta:hover svg { transform: translateX(4px); }
+
+        /* ═══════════════════════════════════════════
+           CARD 2 — LIGHT CREAM CARD
+        ═══════════════════════════════════════════ */
+        .of-card-light {
+          background: var(--cream-s); position: relative; overflow: hidden;
+          display: flex; flex-direction: column;
+          border: 1px solid var(--border);
+          transition: background 0.4s, box-shadow 0.4s;
+        }
+        .of-card-light:hover { background: var(--cream-d); box-shadow: 0 28px 80px rgba(28,28,28,0.07); }
+
+        /* Gold top accent bar */
+        .of-light-top-bar { height: 3px; background: linear-gradient(to right, var(--gold), var(--gold-b), var(--charcoal)); }
+
+        .of-light-body { padding: 40px 40px 44px; display: flex; flex-direction: column; flex: 1; }
+        @media (max-width: 700px) { .of-light-body { padding: 30px 24px 36px; } }
+
+        .of-light-tag-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+        .of-tag-outline { font-size: 8.5px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold); padding: 5px 12px; display: inline-block; }
+        .of-expiry-dark { font-size: 8.5px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--charcoal-lt); border: 1px solid rgba(28,28,28,0.18); padding: 5px 12px; display: inline-block; }
+
+        /* Ghost price as large decorative background */
+        .of-light-price-ghost {
+          font-family: 'Bebas Neue', sans-serif; font-size: clamp(5.5rem, 11vw, 9rem);
+          line-height: 0.85; color: transparent;
+          -webkit-text-stroke: 1.5px rgba(201,162,39,0.22);
+          margin-bottom: 8px; user-select: none; pointer-events: none;
+        }
+
+        .of-light-title {
+          font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.2rem, 3.5vw, 3.2rem);
+          letter-spacing: 0.04em; color: var(--charcoal); line-height: 0.95; margin-bottom: 16px;
+        }
+        .of-light-title::before { content: ''; display: block; width: 28px; height: 2px; background: var(--gold); margin-bottom: 14px; }
+
+        .of-light-desc {
+          font-family: 'Cormorant Garamond', serif; font-size: 1.08rem; font-weight: 600;
+          font-style: italic; line-height: 1.8; color: var(--charcoal-bd);
+          margin-bottom: 28px; -webkit-font-smoothing: antialiased;
+        }
+
+        .of-light-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; }
+        .of-light-list li { display: flex; align-items: center; gap: 12px; font-size: 0.88rem; font-weight: 500; color: var(--charcoal-bd); -webkit-font-smoothing: antialiased; }
+        .of-light-list li::before { content: ''; width: 18px; height: 1px; background: var(--gold); flex-shrink: 0; }
+
+        .of-light-footer {
+          margin-top: auto; padding-top: 28px; border-top: 1px solid var(--border);
+          display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+        }
+        .of-price-stack { display: flex; flex-direction: column; gap: 3px; }
+        .of-price-label { font-size: 9.5px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--charcoal-lt); }
+        .of-price-big { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 4.5vw, 4.2rem); line-height: 0.9; color: var(--gold); }
+
+        /* Charcoal → gold on hover button */
+        .of-light-btn {
+          display: inline-flex; align-items: center; gap: 12px;
+          background: var(--charcoal); color: var(--cream);
+          font-family: 'DM Sans', sans-serif; font-size: 10.5px; font-weight: 600;
+          letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none;
+          padding: 15px 28px; flex-shrink: 0;
+          transition: background 0.3s, color 0.3s, box-shadow 0.3s, gap 0.35s, transform 0.25s;
+        }
+        .of-light-btn:hover { background: var(--gold); color: var(--charcoal); box-shadow: 0 8px 28px rgba(201,162,39,0.3); gap: 18px; transform: translateY(-1px); }
+        .of-light-btn svg { transition: transform 0.35s; }
+        .of-light-btn:hover svg { transform: translateX(4px); }
 
         /* ── LOYALTY BANNER ── */
-        .of-banner { border: 1px solid var(--border); border-top: none; padding: 44px 60px; display: flex; align-items: center; justify-content: space-between; gap: 40px; background: var(--ink2); position: relative; overflow: hidden; z-index: 2; }
-        @media (max-width: 760px) { .of-banner { flex-direction: column; align-items: flex-start; padding: 36px 28px; } }
-        .of-banner::before, .of-banner::after { content: ''; position: absolute; width: 40px; height: 40px; border-color: rgba(201,168,76,0.25); border-style: solid; }
-        .of-banner::before { top: 16px; left: 20px; border-width: 1px 0 0 1px; }
-        .of-banner::after  { bottom: 16px; right: 20px; border-width: 0 1px 1px 0; }
-        .of-banner-left { display: flex; flex-direction: column; gap: 6px; }
-        .of-banner-label { font-size: 10px; font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); }
-        .of-banner-headline { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.8rem, 3vw, 2.8rem); letter-spacing: 0.04em; color: var(--warm); line-height: 1; }
-        .of-banner-right { display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
-        .of-banner-body { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; font-size: 1.05rem; line-height: 1.75; color: var(--warm); max-width: 280px; -webkit-font-smoothing: antialiased; }
-        .of-banner-btn { display: inline-flex; align-items: center; gap: 14px; background: var(--gold); color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none; padding: 17px 32px; transition: background 0.3s, gap 0.35s, transform 0.25s; white-space: nowrap; flex-shrink: 0; }
-        .of-banner-btn:hover { background: var(--gold-light); gap: 22px; transform: translateY(-2px); }
+        .of-banner-wrap { padding-top: 24px; padding-bottom: 100px; }
+        .of-banner {
+          background: var(--charcoal); padding: 52px 60px;
+          display: flex; align-items: center; justify-content: space-between; gap: 48px;
+          position: relative; overflow: hidden;
+        }
+        @media (max-width: 760px) { .of-banner { flex-direction: column; align-items: flex-start; padding: 40px 32px; gap: 32px; } }
+        .of-banner::before {
+          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+          background: linear-gradient(to right, transparent, var(--gold) 20%, var(--gold-b) 50%, var(--gold) 80%, transparent);
+        }
+        .of-banner::after {
+          content: ''; position: absolute; bottom: 20px; right: 28px;
+          width: 32px; height: 32px;
+          border-bottom: 1px solid rgba(201,162,39,0.22); border-right: 1px solid rgba(201,162,39,0.22);
+        }
+        .of-banner-left { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+        .of-banner-label { font-size: 10px; font-weight: 500; letter-spacing: 0.26em; text-transform: uppercase; color: var(--gold); }
+        .of-banner-headline { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 3.5vw, 3.2rem); letter-spacing: 0.04em; color: var(--cream); line-height: 1; }
+        .of-banner-right { display: flex; align-items: center; gap: 40px; flex-wrap: wrap; }
+        .of-banner-body { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; font-size: 1.05rem; line-height: 1.75; color: rgba(245,241,232,0.58); max-width: 300px; -webkit-font-smoothing: antialiased; }
+        .of-banner-btn {
+          display: inline-flex; align-items: center; gap: 14px;
+          background: var(--gold); color: var(--charcoal);
+          font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
+          letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none;
+          padding: 17px 34px; flex-shrink: 0;
+          transition: background 0.3s, box-shadow 0.3s, gap 0.35s, transform 0.25s;
+        }
+        .of-banner-btn:hover { background: var(--gold-b); box-shadow: 0 10px 36px rgba(201,162,39,0.4); gap: 22px; transform: translateY(-2px); }
         .of-banner-btn svg { transition: transform 0.35s; }
         .of-banner-btn:hover svg { transform: translateX(5px); }
 
-        .of-end-rule { height: 1px; background: rgba(255,255,255,0.07); position: relative; z-index: 2; }
+        .of-end-rule { height: 1px; background: var(--border); position: relative; z-index: 2; }
+
+        @media (prefers-reduced-motion: reduce) { .of-walkin::before { animation: none; } }
       `}</style>
 
       <section className="of-section" ref={sectionRef} id="offers">
-        <div className="of-stripe" aria-hidden="true" />
-        <div className="of-vbar"   aria-hidden="true" />
+        <div className="of-vbar" aria-hidden="true" />
 
         {/* ── HEADER ── */}
         <div className="of-inner">
@@ -458,85 +445,77 @@ export default function OffersSection(): JSX.Element {
           </div>
         </div>
 
-        {/* ── TWO-CARD GRID ── */}
-        <div className="of-inner" style={{ paddingTop: 0, paddingBottom: 0 }}>
+        {/* ── CARDS ── */}
+        <div className="of-inner">
           <div className="of-grid">
 
-            {/* ── CARD 1 — fixed £44 ── */}
-            <div className="of-card of-card-fixed">
-              <div className="of-spotlight" aria-hidden="true" />
-              <div className="of-shimmer"   aria-hidden="true" />
-              <span className="of-ghost"    aria-hidden="true">GROOM</span>
-              <div className="of-card-bar"  aria-hidden="true" />
-
-              <div className="of-image-wrap">
+            {/* CARD 1 — Dark charcoal hero card */}
+            <div className="of-card-dark">
+              <div className="of-dark-img">
                 <Image
                   src="/offer.jpg"
                   alt="Barber performing a signature grooming service"
-                  fill
-                  /*
-                    FIX: correct sizes so Next.js generates a 384 w image for
-                    mobile instead of serving the 750 w version — saves ~20 KiB.
-                    Also add quality=65 for this large hero image.
-                  */
+                  fill className="of-hero-img"
                   sizes="(max-width: 860px) 100vw, 50vw"
                   style={{ objectFit: "cover", objectPosition: "center 30%" }}
-                  quality={65}
-                  priority
+                  quality={70} priority
                 />
-                <div className="of-price-badge">
-                  <span className="of-price-badge-from">Our Price</span>
-                  <span className="of-price-badge-num">£44</span>
+                <div className="of-dark-price-chip">
+                  <span className="of-dpc-label">Our Price</span>
+                  <span className="of-dpc-num" data-count={FIXED_OFFER.price}>{FIXED_OFFER.price}</span>
                 </div>
               </div>
 
-              <div className="of-card-body">
-                <div className="of-card-top">
-                  <span className="of-tag">{FIXED_OFFER.tag}</span>
-                  {FIXED_OFFER.expiry && <span className="of-expiry">{FIXED_OFFER.expiry}</span>}
+              <div className="of-dark-body">
+                <div className="of-dark-tag-row">
+                  <span className="of-tag-solid">{FIXED_OFFER.tag}</span>
+                  {FIXED_OFFER.expiry && <span className="of-expiry-light">{FIXED_OFFER.expiry}</span>}
                 </div>
-                <h3 className="of-card-title">{FIXED_OFFER.title}</h3>
-                <p className="of-card-desc">{FIXED_OFFER.description}</p>
-                <ul className="of-includes">
+                <h3 className="of-dark-title">{FIXED_OFFER.title}</h3>
+                <p className="of-dark-desc">{FIXED_OFFER.description}</p>
+                <ul className="of-dark-list">
                   {FIXED_OFFER.includes.map((item) => <li key={item}>{item}</li>)}
                 </ul>
-                <div className="of-price-footer">
-                  <div className="of-price-stack">
-                    <span className="of-price-label">Our price</span>
-                    <span className="of-price-num" data-count={FIXED_OFFER.price}>{FIXED_OFFER.price}</span>
-                    <span className="of-price-pill">Our Price</span>
-                  </div>
+                <div className="of-dark-footer">
                   <span className="of-walkin">Walk-ins welcome</span>
+                  <a href="/booking" className="of-dark-cta">
+                    Book Now
+                    <svg width="16" height="10" viewBox="0 0 16 10" fill="none" aria-hidden="true">
+                      <path d="M1 5h14M9 1l5 4-5 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </a>
                 </div>
               </div>
             </div>
 
-            {/* ── CARD 2 — dynamic ── */}
-            <div className="of-card">
-              <div className="of-shimmer"  aria-hidden="true" />
-              <span className="of-ghost"   aria-hidden="true">OFFER</span>
-              <div className="of-card-bar" aria-hidden="true" />
-
-              <div className="of-card-body">
-                <div className="of-card-top">
+            {/* CARD 2 — Light cream card */}
+            <div className="of-card-light">
+              <div className="of-light-top-bar" aria-hidden="true" />
+              <div className="of-light-body">
+                <div className="of-light-tag-row">
                   <span className="of-tag-outline">{dynamicOffer.tag}</span>
-                  {dynamicOffer.expiry && <span className="of-expiry">{dynamicOffer.expiry}</span>}
+                  {dynamicOffer.expiry && <span className="of-expiry-dark">{dynamicOffer.expiry}</span>}
                 </div>
-                <h3 className="of-card-title">{dynamicOffer.title}</h3>
-                <p className="of-card-desc">{dynamicOffer.description}</p>
-                <ul className="of-includes">
+                <div className="of-light-price-ghost" aria-hidden="true">{dynamicOffer.price}</div>
+                <h3 className="of-light-title">{dynamicOffer.title}</h3>
+                <p className="of-light-desc">{dynamicOffer.description}</p>
+                <ul className="of-light-list">
                   {dynamicOffer.includes.map((item) => <li key={item}>{item}</li>)}
                 </ul>
-                <div className="of-price-footer">
+                <div className="of-light-footer">
                   <div className="of-price-stack">
                     <span className="of-price-label">Our price</span>
-                    <span className="of-price-num"
+                    <span className="of-price-big"
                       data-count={dynamicOffer.price.startsWith("£") ? dynamicOffer.price : undefined}>
                       {dynamicOffer.price}
                     </span>
-                    <span className="of-price-pill">Our Price</span>
                   </div>
-                  <span className="of-walkin">Walk-ins welcome</span>
+                  <a href="/booking" className="of-light-btn">
+                    Book Now
+                    <svg width="16" height="10" viewBox="0 0 16 10" fill="none" aria-hidden="true">
+                      <path d="M1 5h14M9 1l5 4-5 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </a>
                 </div>
               </div>
             </div>
@@ -545,7 +524,7 @@ export default function OffersSection(): JSX.Element {
         </div>
 
         {/* ── LOYALTY BANNER ── */}
-        <div className="of-inner" style={{ paddingTop: 0 }}>
+        <div className="of-inner of-banner-wrap">
           <div className="of-banner">
             <div className="of-banner-left">
               <span className="of-banner-label">Loyalty Reward</span>
@@ -558,7 +537,7 @@ export default function OffersSection(): JSX.Element {
               <a href="/loyalty" className="of-banner-btn">
                 Join the Club
                 <svg width="18" height="10" viewBox="0 0 18 10" fill="none" aria-hidden="true">
-                  <path d="M1 5h16M11 1l6 4-6 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M1 5h16M11 1l6 4-6 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </a>
             </div>

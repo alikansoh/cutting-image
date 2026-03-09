@@ -153,51 +153,48 @@ export default function AboutSection(): JSX.Element {
     <>
       <style>{`
         :root {
-          --ivory:    #FAF7F2;
-          --ivory-s:  #F0EBE1;
-          --ivory-d:  #E6DDD0;
-          --ink:      #1A1208;
-          --ink-m:    #3D2E1A;
-          --ink-lt:   #5C4A36;
-          --ink-body: #4A3828;
-          --cr:       #8B1A28;
-          --cr-b:     #B02235;
-          --cr-dim:   rgba(139,26,40,.12);
-          --nv:       #0E1E30;
-          --nv-b:     #1A3050;
-          --border:   rgba(139,26,40,.14);
+          /* Use only the three provided colors */
+          --main-1: #1C1C1C; /* Charcoal Black */
+          --main-2: #F5F1E8; /* Warm Cream */
+          --accent: #C9A227; /* Gold */
+
+          /* derived semi-transparent values */
+          --accent-14: rgba(201,162,39,.14);
+          --accent-35: rgba(201,162,39,.35);
+          --shadow-main: rgba(28,28,28,.14);
+          --main-2-94: rgba(245,241,232,.94);
         }
 
         .ci-about *,.ci-about *::before,.ci-about *::after { box-sizing:border-box; margin:0; padding:0; }
 
-        /* ── Light ivory base ── */
+        /* ── Warm cream base ── */
         .ci-about {
-          background:var(--ivory); color:var(--ink);
+          background:var(--main-2); color:var(--main-1);
           font-family:'DM Sans',sans-serif; position:relative; overflow:hidden;
         }
 
-        /* Subtle grain on ivory */
+        /* Subtle grain on cream */
         .ci-about::after {
           content:''; position:absolute; inset:0;
           background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
           opacity:.018; pointer-events:none; z-index:50;
         }
 
-        /* Crimson side bar — parallaxes */
+        /* Gold side bar — parallaxes */
         .ci-side-bar {
           position:absolute; left:52px; top:-10%; width:2px; height:120%;
-          background:linear-gradient(to bottom,transparent 0%,var(--cr) 25%,var(--cr) 75%,transparent 100%);
+          background:linear-gradient(to bottom,transparent 0%,var(--accent) 25%,var(--accent) 75%,transparent 100%);
           opacity:.2; pointer-events:none; z-index:1;
         }
 
         .ci-inner { max-width:1360px; margin:0 auto; padding:0 88px; position:relative; z-index:2; }
         @media (max-width:960px) { .ci-inner { padding:0 28px; } .ci-side-bar { display:none; } }
 
-        /* ── Marquee — ivory-s surface ── */
+        /* ── Marquee — cream surface ── */
         .ci-marquee {
           overflow:hidden;
-          border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-          padding:16px 0; background:var(--ivory-s);
+          border-top:1px solid var(--accent-14); border-bottom:1px solid var(--accent-14);
+          padding:16px 0; background:var(--main-2);
         }
         .ci-marquee-track { display:flex; white-space:nowrap; animation:ciMq 24s linear infinite; }
         .ci-marquee-track:hover { animation-play-state:paused; }
@@ -205,74 +202,72 @@ export default function AboutSection(): JSX.Element {
         .ci-marquee-item {
           display:inline-flex; align-items:center; gap:18px; padding:0 28px; flex-shrink:0;
           font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:.14em;
-          color:var(--ink-lt);
+          color:rgba(28,28,28,.85);
         }
-        /* Alternating crimson / navy dots */
-        .ci-mq-dot-cr { width:4px; height:4px; border-radius:50%; background:var(--cr); flex-shrink:0; }
-        .ci-mq-dot-nv { width:4px; height:4px; border-radius:50%; background:var(--nv); flex-shrink:0; }
+        /* Alternating gold dots */
+        .ci-mq-dot-cr { width:4px; height:4px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+        .ci-mq-dot-nv { width:4px; height:4px; border-radius:50%; background:var(--main-1); flex-shrink:0; }
 
         /* ── Stats ── */
-        .ci-stats { display:grid; grid-template-columns:repeat(4,1fr); border-bottom:1px solid var(--border); }
+        .ci-stats { display:grid; grid-template-columns:repeat(4,1fr); border-bottom:1px solid var(--accent-14); }
         @media (max-width:700px) { .ci-stats { grid-template-columns:repeat(2,1fr); } }
         .ci-stat-item {
-          padding:40px 28px; text-align:center; border-right:1px solid var(--border);
-          background:var(--ivory); transition:background .3s;
+          padding:40px 28px; text-align:center; border-right:1px solid var(--accent-14);
+          background:var(--main-2); transition:background .3s;
         }
-        .ci-stat-item:hover { background:var(--ivory-s); }
+        .ci-stat-item:hover { background:rgba(245,241,232,.98); }
         .ci-stat-item:last-child { border-right:none; }
-        /* Navy stat numbers — readable on ivory */
+        /* Charcoal stat numbers — readable on cream */
         .ci-stat-num {
           display:block; font-family:'Bebas Neue',sans-serif;
           font-size:clamp(2.6rem,4vw,3.8rem); line-height:1; margin-bottom:6px;
-          background:linear-gradient(120deg,#0E1E30,#1A3050);
-          -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+          color:var(--main-1);
         }
-        .ci-stat-label { font-size:10px; font-weight:500; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-lt); }
+        .ci-stat-label { font-size:10px; font-weight:500; letter-spacing:.2em; text-transform:uppercase; color:rgba(28,28,28,.7); }
 
         /* ── Split ── */
         .ci-split { display:grid; grid-template-columns:1fr 1fr; gap:100px; align-items:center; padding:120px 0; }
         @media (max-width:960px) { .ci-split { grid-template-columns:1fr; gap:60px; padding:80px 0; } }
 
         .ci-eyebrow { display:flex; align-items:center; gap:14px; margin-bottom:30px; }
-        .ci-eyebrow-label { font-size:10.5px; font-weight:500; letter-spacing:.24em; text-transform:uppercase; color:var(--cr); font-family:'DM Sans',sans-serif; }
-        /* Crimson draw line */
-        .ci-line-draw { width:72px; height:1px; background:var(--cr); transform:scaleX(0); transform-origin:left center; }
+        .ci-eyebrow-label { font-size:10.5px; font-weight:500; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-family:'DM Sans',sans-serif; }
+        /* Gold draw line */
+        .ci-line-draw { width:72px; height:1px; background:var(--accent); transform:scaleX(0); transform-origin:left center; }
 
         .ci-heading-wrap { margin-bottom:36px; }
-        /* Dark ink heading — navy contrast on ivory */
+        /* Charcoal heading — strong contrast on cream */
         .ci-heading-line {
           display:block; overflow:hidden;
           font-family:'Bebas Neue',sans-serif;
           font-size:clamp(3.8rem,9vw,8.5rem); line-height:.92; letter-spacing:.025em;
-          color:var(--nv);
+          color:var(--main-1);
         }
-        /* Crimson-to-navy gradient accent word */
+        /* Gold accent word */
         .ci-heading-accent {
           display:block; overflow:hidden;
           font-family:'Bebas Neue',sans-serif;
           font-size:clamp(3.8rem,9vw,8.5rem); line-height:.92; letter-spacing:.025em;
-          background:linear-gradient(110deg,#6E1020 0%,#8B1A28 28%,#C03050 50%,#8B1A28 72%,#6E1020 100%);
-          -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+          color:var(--accent);
         }
 
-        /* Body text — warm dark brown, very readable on ivory */
+        /* Body text — charcoal */
         .ci-body-text {
           font-family:'Cormorant Garamond',serif;
           font-size:clamp(1.1rem,1.5vw,1.3rem); font-weight:600; line-height:1.8;
-          color:var(--ink-body); max-width:500px; margin-bottom:24px; font-style:italic;
+          color:var(--main-1); max-width:500px; margin-bottom:24px; font-style:italic;
           -webkit-font-smoothing:antialiased;
         }
 
-        /* CTA link — crimson */
+        /* CTA link — gold */
         .ci-cta {
           display:inline-flex; align-items:center; gap:12px;
           font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500;
-          letter-spacing:.2em; text-transform:uppercase; color:var(--cr);
-          text-decoration:none; border-bottom:1px solid rgba(139,26,40,.35);
+          letter-spacing:.2em; text-transform:uppercase; color:var(--accent);
+          text-decoration:none; border-bottom:1px solid var(--accent-35);
           padding-bottom:5px; margin-top:16px;
           transition:gap .35s,border-color .35s,color .35s;
         }
-        .ci-cta:hover { gap:22px; color:#6E1020; border-color:#6E1020; }
+        .ci-cta:hover { gap:22px; color:rgba(201,162,39,.95); border-color:rgba(201,162,39,.95); }
         .ci-cta svg { transition:transform .35s; }
         .ci-cta:hover svg { transform:translateX(5px); }
 
@@ -282,77 +277,77 @@ export default function AboutSection(): JSX.Element {
         .ci-img-main { position:absolute; inset:0 0 70px 70px; overflow:hidden; }
         .ci-img-accent {
           position:absolute; bottom:0; left:0; width:52%; height:46%;
-          overflow:hidden; border:4px solid var(--ivory); z-index:2;
-          box-shadow:0 8px 40px rgba(26,18,8,.14);
+          overflow:hidden; border:4px solid var(--main-2); z-index:2;
+          box-shadow:0 8px 40px var(--shadow-main);
         }
-        /* Crimson wipe reveal */
-        .ci-img-cover { position:absolute; inset:0; background:var(--cr); z-index:3; transform-origin:right center; }
+        /* Gold wipe reveal */
+        .ci-img-cover { position:absolute; inset:0; background:var(--accent); z-index:3; transform-origin:right center; }
         .ci-img-main .ci-img-el,.ci-img-accent .ci-img-el { object-fit:cover; display:block; z-index:1; }
 
-        /* Image label — ivory bg, crimson accent */
+        /* Image label — cream bg, gold accent */
         .ci-img-label {
           position:absolute; bottom:16px; left:16px;
-          background:rgba(250,247,242,.94); border-left:2px solid var(--cr);
+          background:var(--main-2-94); border-left:2px solid var(--accent);
           padding:9px 14px; font-family:'DM Sans',sans-serif; font-size:10px;
-          letter-spacing:.16em; text-transform:uppercase; color:var(--cr);
+          letter-spacing:.16em; text-transform:uppercase; color:var(--accent);
           z-index:4; backdrop-filter:blur(8px);
         }
 
-        /* Badge — navy fill with ivory text + crimson year */
+        /* Badge — charcoal fill with cream text + gold year (kept legible) */
         .ci-badge {
           position:absolute; top:-10px; right:-10px;
-          width:96px; height:96px; background:var(--nv);
+          width:96px; height:96px; background:var(--main-1);
           display:flex; flex-direction:column; align-items:center; justify-content:center;
-          z-index:5; box-shadow:0 4px 24px rgba(14,30,48,.3);
+          z-index:5; box-shadow:0 4px 24px var(--shadow-main);
         }
         .ci-badge-since {
           font-family:'DM Sans',sans-serif; font-size:8.5px; letter-spacing:.22em;
-          text-transform:uppercase; color:rgba(250,247,242,.6); font-weight:600; margin-bottom:1px;
+          text-transform:uppercase; color:rgba(245,241,232,.6); font-weight:600; margin-bottom:1px;
         }
-        .ci-badge-year { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; color:var(--ivory); line-height:1; }
+        .ci-badge-year { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; color:var(--accent); line-height:1; }
 
-        /* ── Pillars — ivory-s surface ── */
-        .ci-pillars { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); }
+        /* ── Pillars — cream surface ── */
+        .ci-pillars { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--accent-14); }
         @media (max-width:760px) { .ci-pillars { grid-template-columns:1fr; } }
         .ci-pillar {
-          background:var(--ivory-s); padding:52px 40px;
+          background:var(--main-2); padding:52px 40px;
           position:relative; overflow:hidden; transition:background .45s;
         }
-        /* Crimson bottom reveal bar */
+        /* Gold bottom reveal bar */
         .ci-pillar::after {
           content:''; position:absolute; bottom:0; left:0; right:0;
           height:3px;
-          background:linear-gradient(to right,var(--cr),var(--nv));
+          background:linear-gradient(to right,var(--accent),var(--main-1));
           transform:scaleX(0); transform-origin:left; transition:transform .55s;
         }
-        .ci-pillar:hover { background:var(--ivory-d); }
+        .ci-pillar:hover { background:rgba(245,241,232,.98); }
         .ci-pillar:hover::after { transform:scaleX(1); }
 
-        /* Large ghost number — navy tint */
+        /* Large ghost number — charcoal tint */
         .ci-pillar-bg-num {
           font-family:'Bebas Neue',sans-serif; font-size:5rem;
-          color:rgba(14,30,48,.07); line-height:1;
+          color:rgba(28,28,28,.07); line-height:1;
           position:absolute; top:20px; right:24px;
           transition:color .45s; pointer-events:none; user-select:none;
         }
-        .ci-pillar:hover .ci-pillar-bg-num { color:rgba(14,30,48,.14); }
+        .ci-pillar:hover .ci-pillar-bg-num { color:rgba(28,28,28,.14); }
 
-        /* Pillar title — navy */
+        /* Pillar title — charcoal */
         .ci-pillar-title {
           font-family:'Bebas Neue',sans-serif; font-size:2.1rem;
-          letter-spacing:.07em; color:var(--nv); margin-bottom:18px;
+          letter-spacing:.07em; color:var(--main-1); margin-bottom:18px;
         }
         .ci-pillar-title::before {
           content:''; display:block; width:24px; height:1px;
-          background:var(--cr); margin-bottom:16px;
+          background:var(--accent); margin-bottom:16px;
         }
-        /* Body — warm dark brown */
+        /* Body — charcoal */
         .ci-pillar-body {
           font-family:'Cormorant Garamond',serif; font-size:1.08rem;
-          line-height:1.85; color:var(--ink-body); font-weight:600;
+          line-height:1.85; color:var(--main-1); font-weight:600;
         }
 
-        .ci-bottom-rule { height:1px; background:var(--border); position:relative; z-index:2; }
+        .ci-bottom-rule { height:1px; background:var(--accent-14); position:relative; z-index:2; }
 
         @media (prefers-reduced-motion:reduce) { .ci-marquee-track { animation:none; } }
       `}</style>

@@ -3,13 +3,6 @@
 
 import { JSX, useEffect, useRef, useState } from "react";
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  PERF: @import removed — fonts served from layout.tsx <head>.
-//  GSAP loaded in parallel via Promise.all, gated behind IntersectionObserver.
-//  All entrance animations are CSS-first; GSAP handles only scroll parallax
-//  and the active-card tilt (both require runtime data CSS can't provide).
-// ─────────────────────────────────────────────────────────────────────────────
-
 interface Review {
   id: number;
   author: string;
@@ -94,7 +87,7 @@ function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
         >
           <polygon
             points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-            fill={i < Math.floor(rating) ? "#C9A84C" : "rgba(201,168,76,0.2)"}
+            fill={i < Math.floor(rating) ? "#C9A227" : "rgba(201,162,39,0.2)"}
             stroke="none"
           />
         </svg>
@@ -223,38 +216,47 @@ export default function ReviewsSection(): JSX.Element {
     <>
       <style>{`
         :root {
-          --gold:       #C9A84C;
-          --gold-light: #F0D878;
-          --gold-dim:   #6B4F16;
-          --ink:        #080705;
-          --ink2:       #0F0E0C;
-          --ink3:       #161410;
-          --warm:       #F0EAD6;
-          --muted:      #7A7060;
-          --border:     rgba(201,168,76,0.18);
+          /* Shared palette — matches About section exactly */
+          --main-1:      #1C1C1C;              /* Charcoal Black  */
+          --main-2:      #F5F1E8;              /* Warm Cream      */
+          --accent:      #C9A227;              /* Gold            */
+
+          /* Derived values */
+          --accent-14:   rgba(201,162,39,.14);
+          --accent-35:   rgba(201,162,39,.35);
+          --accent-60:   rgba(201,162,39,.60);
+          --main-1-06:   rgba(28,28,28,.06);
+          --main-1-10:   rgba(28,28,28,.10);
+          --main-2-94:   rgba(245,241,232,.94);
+          --main-2-98:   rgba(245,241,232,.98);
+          --muted:       rgba(28,28,28,.55);
+          --shadow-main: rgba(28,28,28,.10);
         }
 
         .rv-section *, .rv-section *::before, .rv-section *::after {
           box-sizing: border-box; margin: 0; padding: 0;
         }
+
+        /* ── Base — cream background ── */
         .rv-section {
-          background: var(--ink); color: var(--warm);
+          background: var(--main-2); color: var(--main-1);
           font-family: 'DM Sans', sans-serif;
           position: relative; overflow: hidden;
         }
-        /* Grain */
+
+        /* Subtle grain — same as About */
         .rv-section::before {
           content: ''; position: absolute; inset: 0;
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-          opacity: 0.04; pointer-events: none; z-index: 40;
+          opacity: .018; pointer-events: none; z-index: 40;
         }
 
-        /* Gold vertical accent bar */
+        /* Gold vertical accent bar — matches About */
         .rv-vbar {
           position: absolute; left: 52px; top: -8%;
-          width: 1px; height: 118%;
-          background: linear-gradient(to bottom, transparent, var(--gold) 25%, var(--gold) 75%, transparent);
-          opacity: 0.28; pointer-events: none; z-index: 1;
+          width: 2px; height: 118%;
+          background: linear-gradient(to bottom, transparent, var(--accent) 25%, var(--accent) 75%, transparent);
+          opacity: .2; pointer-events: none; z-index: 1;
         }
 
         .rv-inner {
@@ -267,57 +269,62 @@ export default function ReviewsSection(): JSX.Element {
         .rv-header {
           display: grid; grid-template-columns: 1fr 1fr;
           gap: 100px; align-items: center;
-          padding: 120px 0 80px; border-bottom: 1px solid var(--border);
+          padding: 120px 0 80px; border-bottom: 1px solid var(--accent-14);
         }
         @media (max-width: 960px) { .rv-header { grid-template-columns: 1fr; gap: 48px; padding: 80px 0 60px; } }
 
         .rv-eyebrow { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
         .rv-eyebrow-label {
           font-size: 10.5px; font-weight: 500;
-          letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold);
+          letter-spacing: 0.24em; text-transform: uppercase; color: var(--accent);
         }
-        .rv-line { width: 72px; height: 1px; background: var(--gold); transform: scaleX(0); transform-origin: left; }
+        /* Gold draw line — matches About */
+        .rv-line { width: 72px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; }
 
+        /* Charcoal heading — same as About .ci-heading-line */
         .rv-hline {
           display: block; overflow: hidden;
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(3.8rem, 9vw, 8.5rem); line-height: 0.92;
-          letter-spacing: 0.025em; color: var(--warm);
+          letter-spacing: 0.025em; color: var(--main-1);
         }
+        /* Gold accent word — same as About .ci-heading-accent */
         .rv-gold-word {
           display: block; overflow: hidden;
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(3.8rem, 9vw, 8.5rem); line-height: 0.92; letter-spacing: 0.025em;
-          background: linear-gradient(110deg, var(--gold-dim) 0%, var(--gold) 28%, var(--gold-light) 50%, var(--gold) 72%, var(--gold-dim) 100%);
-          -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+          color: var(--accent);
         }
 
         .rv-header-right { padding-top: 12px; }
+        /* Body text — charcoal italic, matches About .ci-body-text */
         .rv-body {
           font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(1.15rem, 1.6vw, 1.35rem);
-          font-weight: 600; font-style: italic; line-height: 1.85;
-          color: var(--warm); margin-bottom: 32px; -webkit-font-smoothing: antialiased;
+          font-size: clamp(1.1rem, 1.5vw, 1.3rem);
+          font-weight: 600; font-style: italic; line-height: 1.8;
+          color: var(--main-1); margin-bottom: 32px;
+          -webkit-font-smoothing: antialiased;
         }
 
-        /* ── SCORE BLOCK ── */
+        /* ── SCORE BLOCK — cream surface, charcoal border ── */
         .rv-score {
           display: inline-flex; align-items: center; gap: 24px;
-          background: var(--ink2); border: 1px solid var(--border);
+          background: var(--main-2-98);
+          border: 1px solid var(--accent-14);
+          box-shadow: 0 4px 24px var(--shadow-main);
           padding: 20px 28px;
         }
+        /* Charcoal score number — strong on cream */
         .rv-score-num {
           font-family: 'Bebas Neue', sans-serif;
           font-size: 3.8rem; line-height: 1;
-          background: linear-gradient(120deg, var(--gold), var(--gold-light));
-          -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+          color: var(--main-1);
         }
         .rv-score-detail { display: flex; flex-direction: column; gap: 4px; }
         .rv-score-label {
           font-size: 10px; font-weight: 500; letter-spacing: 0.2em;
           text-transform: uppercase; color: var(--muted);
         }
-        /* Google 'G' logo */
         .rv-google-badge {
           display: inline-flex; align-items: center; gap: 7px;
           font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
@@ -327,85 +334,91 @@ export default function ReviewsSection(): JSX.Element {
           width: 18px; height: 18px;
           background: #fff; border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
+          flex-shrink: 0; box-shadow: 0 1px 4px var(--shadow-main);
         }
         .rv-google-g svg { width: 12px; height: 12px; }
 
         .rv-stars { display: inline-flex; align-items: center; gap: 2px; }
 
         /* ── CAROUSEL ── */
-        .rv-carousel-wrap {
-          padding: 80px 0 0;
-          position: relative;
-        }
+        .rv-carousel-wrap { padding: 80px 0 0; position: relative; }
 
         /* Featured large card */
         .rv-featured {
           display: grid; grid-template-columns: 1fr 1.6fr;
-          gap: 2px; background: var(--border); margin-bottom: 2px;
+          gap: 1px; background: var(--accent-14); margin-bottom: 1px;
         }
         @media (max-width: 860px) { .rv-featured { grid-template-columns: 1fr; } }
 
+        /* Meta panel — slightly deeper cream */
         .rv-featured-meta {
-          background: var(--ink2);
+          background: var(--main-2-98);
           padding: 52px 48px;
           display: flex; flex-direction: column; justify-content: space-between;
           position: relative; overflow: hidden;
+          transition: background 0.4s ease;
         }
+        /* Ghost initial — charcoal tint */
         .rv-featured-meta::after {
           content: attr(data-initial);
           position: absolute; bottom: -20px; right: -10px;
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(7rem, 14vw, 12rem); line-height: 1;
-          color: transparent; -webkit-text-stroke: 1px rgba(201,168,76,0.1);
+          color: transparent; -webkit-text-stroke: 1px rgba(28,28,28,.07);
           pointer-events: none; user-select: none;
         }
 
+        /* Avatar — charcoal fill, cream text, matches About .ci-badge */
         .rv-avatar {
           width: 64px; height: 64px;
-          background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+          background: var(--main-1);
           display: flex; align-items: center; justify-content: center;
-          font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--ink);
+          font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem;
+          color: var(--accent);
           letter-spacing: 0.05em; margin-bottom: 24px; flex-shrink: 0;
         }
         .rv-author-name {
           font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem;
-          letter-spacing: 0.06em; color: var(--warm); line-height: 1; margin-bottom: 4px;
+          letter-spacing: 0.06em; color: var(--main-1); line-height: 1; margin-bottom: 4px;
         }
         .rv-author-date {
           font-size: 10px; font-weight: 500; letter-spacing: 0.18em;
           text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
         }
+        /* Service pill — gold border, gold text */
         .rv-service-pill {
           display: inline-block;
-          border: 1px solid var(--border); padding: 5px 12px;
+          border: 1px solid var(--accent-35); padding: 5px 12px;
           font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em;
-          text-transform: uppercase; color: var(--gold);
+          text-transform: uppercase; color: var(--accent);
         }
 
+        /* Text panel — cream base */
         .rv-featured-text {
-          background: var(--ink3);
+          background: var(--main-2);
           padding: 52px 56px;
           display: flex; flex-direction: column; justify-content: center;
-          position: relative;
+          position: relative; transition: opacity 0.4s ease;
+          border-left: 1px solid var(--accent-14);
         }
         @media (max-width: 700px) { .rv-featured-text { padding: 40px 28px; } .rv-featured-meta { padding: 40px 28px; } }
 
-        /* Opening quote mark */
+        /* Gold quote mark */
         .rv-quote-mark {
           font-family: 'Cormorant Garamond', serif;
-          font-size: 7rem; line-height: 0.6; color: var(--gold);
-          opacity: 0.25; display: block; margin-bottom: 8px; user-select: none;
+          font-size: 7rem; line-height: 0.6; color: var(--accent);
+          opacity: 0.3; display: block; margin-bottom: 8px; user-select: none;
         }
+        /* Review text — charcoal on cream */
         .rv-review-text {
           font-family: 'Cormorant Garamond', serif;
           font-size: clamp(1.2rem, 1.8vw, 1.5rem); font-weight: 400;
-          font-style: italic; line-height: 1.85; color: var(--warm);
+          font-style: italic; line-height: 1.85; color: var(--main-1);
           -webkit-font-smoothing: antialiased;
         }
         .rv-featured-footer {
           display: flex; align-items: center; justify-content: space-between;
-          margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border);
+          margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--accent-14);
         }
         .rv-verified {
           font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em;
@@ -413,41 +426,44 @@ export default function ReviewsSection(): JSX.Element {
           display: flex; align-items: center; gap: 8px;
         }
         .rv-verified::before {
-          content: ''; width: 16px; height: 1px; background: var(--gold); opacity: 0.5;
+          content: ''; width: 16px; height: 1px; background: var(--accent); opacity: 0.5;
         }
 
         /* Thumbnail strip */
         .rv-thumbs {
           display: grid; grid-template-columns: repeat(6, 1fr);
-          gap: 2px; background: var(--border);
+          gap: 1px; background: var(--accent-14);
         }
         @media (max-width: 960px) { .rv-thumbs { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 500px) { .rv-thumbs { grid-template-columns: repeat(2, 1fr); } }
 
+        /* Thumb — matches About .ci-pillar pattern */
         .rv-thumb {
-          background: var(--ink2); padding: 24px 20px;
+          background: var(--main-2); padding: 24px 20px;
           cursor: pointer; position: relative; overflow: hidden;
           transition: background 0.35s ease;
           border: none; text-align: left; color: inherit; width: 100%;
         }
+        /* Gold bottom reveal bar — matches About .ci-pillar::after */
         .rv-thumb::after {
           content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-          height: 2px;
-          background: linear-gradient(to right, var(--gold), var(--gold-light));
+          height: 3px;
+          background: linear-gradient(to right, var(--accent), var(--main-1));
           transform: scaleX(0); transform-origin: left;
           transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
         }
         .rv-thumb:hover,
-        .rv-thumb.rv-thumb--active { background: var(--ink3); }
+        .rv-thumb.rv-thumb--active { background: var(--main-2-98); }
         .rv-thumb:hover::after,
         .rv-thumb.rv-thumb--active::after { transform: scaleX(1); }
 
+        /* Thumb avatar — charcoal, gold initials */
         .rv-thumb-avatar {
           width: 36px; height: 36px;
-          background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+          background: var(--main-1);
           display: flex; align-items: center; justify-content: center;
           font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem;
-          color: var(--ink); letter-spacing: 0.05em; margin-bottom: 10px;
+          color: var(--accent); letter-spacing: 0.05em; margin-bottom: 10px;
           transition: transform 0.35s ease;
         }
         .rv-thumb:hover .rv-thumb-avatar,
@@ -455,7 +471,7 @@ export default function ReviewsSection(): JSX.Element {
 
         .rv-thumb-name {
           font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600;
-          letter-spacing: 0.06em; color: var(--warm); display: block;
+          letter-spacing: 0.06em; color: var(--main-1); display: block;
           margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .rv-thumb-snippet {
@@ -464,72 +480,67 @@ export default function ReviewsSection(): JSX.Element {
           overflow: hidden; line-height: 1.5;
         }
 
-        /* Dot progress bar */
+        /* Progress dots */
         .rv-progress {
           display: flex; align-items: center; gap: 8px;
           margin-top: 32px; justify-content: center;
         }
         .rv-dot {
-          width: 24px; height: 2px; background: var(--border); cursor: pointer;
+          width: 24px; height: 2px; background: var(--accent-14); cursor: pointer;
           transition: background 0.3s, width 0.4s cubic-bezier(0.16,1,0.3,1);
           border: none;
         }
-        .rv-dot.rv-dot--active { background: var(--gold); width: 48px; }
+        .rv-dot.rv-dot--active { background: var(--accent); width: 48px; }
 
         /* ── CTA ── */
         .rv-cta {
           padding: 80px 0 100px; display: flex;
           align-items: center; justify-content: space-between;
-          gap: 48px; border-top: 1px solid var(--border);
+          gap: 48px; border-top: 1px solid var(--accent-14);
         }
         @media (max-width: 760px) { .rv-cta { flex-direction: column; align-items: flex-start; padding: 60px 0 80px; } }
 
-        .rv-cta-left {}
         .rv-cta-overline {
           font-size: 10px; font-weight: 500; letter-spacing: 0.24em;
-          text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 10px;
+          text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 10px;
         }
+        /* CTA heading — charcoal, matches About heading style */
         .rv-cta-heading {
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(2.2rem, 4vw, 3.8rem); letter-spacing: 0.05em;
-          color: var(--warm); line-height: 1;
+          color: var(--main-1); line-height: 1;
         }
         .rv-cta-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
         @media (max-width: 760px) { .rv-cta-right { flex-wrap: wrap; } }
 
+        /* Primary button — gold bg, charcoal text (matches About .ci-cta style inverted) */
         .rv-btn-primary {
           display: inline-flex; align-items: center; gap: 14px;
-          background: var(--gold); color: var(--ink);
+          background: var(--main-1); color: var(--main-2);
           font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600;
           letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none;
           padding: 18px 36px; transition: background .3s, gap .35s, transform .25s;
           white-space: nowrap;
         }
-        .rv-btn-primary:hover { background: var(--gold-light); gap: 22px; transform: translateY(-2px); }
+        .rv-btn-primary:hover { background: var(--accent); color: var(--main-1); gap: 22px; transform: translateY(-2px); }
 
+        /* Ghost CTA — matches About .ci-cta exactly */
         .rv-btn-ghost {
           display: inline-flex; align-items: center; gap: 12px;
           font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
-          letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold);
+          letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent);
           text-decoration: none;
-          border-bottom: 1px solid rgba(201,168,76,0.4); padding-bottom: 5px;
+          border-bottom: 1px solid var(--accent-35); padding-bottom: 5px;
           transition: gap .35s, color .3s, border-color .3s; white-space: nowrap;
         }
-        .rv-btn-ghost:hover { gap: 20px; color: var(--gold-light); border-color: var(--gold-light); }
+        .rv-btn-ghost:hover { gap: 20px; color: rgba(201,162,39,.95); border-color: rgba(201,162,39,.95); }
+        .rv-btn-ghost svg { transition: transform .35s; }
+        .rv-btn-ghost:hover svg { transform: translateX(5px); }
 
-        .rv-end-rule { height: 1px; background: rgba(255,255,255,0.07); position: relative; z-index: 2; }
+        .rv-end-rule { height: 1px; background: var(--accent-14); position: relative; z-index: 2; }
 
-        /* ── ENTRANCE ANIMATIONS ── */
-        @keyframes rvFadeUp {
-          from { opacity: 0; transform: translateY(28px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes rvFadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
+        .rv-stars { display: inline-flex; align-items: center; gap: 2px; }
 
-        /* Featured card transitions */
         .rv-featured-text { transition: opacity 0.4s ease; }
         .rv-featured-meta { transition: opacity 0.4s ease; }
 
@@ -573,7 +584,6 @@ export default function ReviewsSection(): JSX.Element {
                   <span className="rv-score-label">{TOTAL_REVIEWS} reviews</span>
                   <span className="rv-google-badge">
                     <span className="rv-google-g">
-                      {/* Google G */}
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M21.805 10.023H12.18v3.955h5.486c-.236 1.267-.955 2.34-2.034 3.06l3.283 2.549c1.916-1.767 3.022-4.368 3.022-7.442 0-.713-.065-1.399-.131-2.122z" fill="#4285F4"/>
                         <path d="M12.18 22c2.756 0 5.07-.913 6.763-2.49l-3.283-2.548c-.912.61-2.083.978-3.48.978-2.674 0-4.94-1.806-5.75-4.237L3.064 16.25C4.736 19.664 8.188 22 12.18 22z" fill="#34A853"/>
