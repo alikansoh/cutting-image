@@ -221,6 +221,11 @@ export default function ReviewsSection(): JSX.Element {
           --main-2:      #F5F1E8;              /* Warm Cream      */
           --accent:      #C9A227;              /* Gold            */
 
+          /* Olive / green accents (Hero/Offers) */
+          --olive:       #6B7A3A;
+          --olive-hi:    #8A9E4A;
+          --olive-lo:    #47531F;
+
           /* Derived values */
           --accent-14:   rgba(201,162,39,.14);
           --accent-35:   rgba(201,162,39,.35);
@@ -251,11 +256,11 @@ export default function ReviewsSection(): JSX.Element {
           opacity: .018; pointer-events: none; z-index: 40;
         }
 
-        /* Gold vertical accent bar — matches About */
+        /* Gold + Olive vertical accent bar */
         .rv-vbar {
           position: absolute; left: 52px; top: -8%;
           width: 2px; height: 118%;
-          background: linear-gradient(to bottom, transparent, var(--accent) 25%, var(--accent) 75%, transparent);
+          background: linear-gradient(to bottom, transparent, var(--accent) 18%, var(--olive-hi) 42%, var(--accent) 72%, transparent);
           opacity: .2; pointer-events: none; z-index: 1;
         }
 
@@ -276,10 +281,11 @@ export default function ReviewsSection(): JSX.Element {
         .rv-eyebrow { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
         .rv-eyebrow-label {
           font-size: 10.5px; font-weight: 500;
-          letter-spacing: 0.24em; text-transform: uppercase; color: var(--accent);
+          letter-spacing: 0.24em; text-transform: uppercase;
+          color: var(--olive-hi); /* made green */
         }
-        /* Gold draw line — matches About */
-        .rv-line { width: 72px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+        /* Line now blends olive -> gold */
+        .rv-line { width: 72px; height: 1px; background: linear-gradient(90deg, var(--olive-hi), var(--accent)); transform: scaleX(0); transform-origin: left; }
 
         /* Charcoal heading — same as About .ci-heading-line */
         .rv-hline {
@@ -288,7 +294,7 @@ export default function ReviewsSection(): JSX.Element {
           font-size: clamp(3.8rem, 9vw, 8.5rem); line-height: 0.92;
           letter-spacing: 0.025em; color: var(--main-1);
         }
-        /* Gold accent word — same as About .ci-heading-accent */
+        /* Gold accent word — keep gold but align with green touches */
         .rv-gold-word {
           display: block; overflow: hidden;
           font-family: 'Bebas Neue', sans-serif;
@@ -314,11 +320,14 @@ export default function ReviewsSection(): JSX.Element {
           box-shadow: 0 4px 24px var(--shadow-main);
           padding: 20px 28px;
         }
-        /* Charcoal score number — strong on cream */
+        /* Rating number now uses an olive->gold gradient text fill */
         .rv-score-num {
           font-family: 'Bebas Neue', sans-serif;
           font-size: 3.8rem; line-height: 1;
-          color: var(--main-1);
+          background: linear-gradient(120deg, var(--olive-hi), var(--accent));
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
         .rv-score-detail { display: flex; flex-direction: column; gap: 4px; }
         .rv-score-label {
@@ -368,13 +377,13 @@ export default function ReviewsSection(): JSX.Element {
           pointer-events: none; user-select: none;
         }
 
-        /* Avatar — charcoal fill, cream text, matches About .ci-badge */
+        /* Avatar — charcoal fill, olive initials */
         .rv-avatar {
           width: 64px; height: 64px;
           background: var(--main-1);
           display: flex; align-items: center; justify-content: center;
           font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem;
-          color: var(--accent);
+          color: var(--olive-hi); /* green initials */
           letter-spacing: 0.05em; margin-bottom: 24px; flex-shrink: 0;
         }
         .rv-author-name {
@@ -385,12 +394,14 @@ export default function ReviewsSection(): JSX.Element {
           font-size: 10px; font-weight: 500; letter-spacing: 0.18em;
           text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
         }
-        /* Service pill — gold border, gold text */
+        /* Service pill — now olive */
         .rv-service-pill {
           display: inline-block;
-          border: 1px solid var(--accent-35); padding: 5px 12px;
+          border: 1px solid var(--olive-hi);
+          color: var(--olive-hi);
+          padding: 5px 12px;
           font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em;
-          text-transform: uppercase; color: var(--accent);
+          text-transform: uppercase;
         }
 
         /* Text panel — cream base */
@@ -403,11 +414,12 @@ export default function ReviewsSection(): JSX.Element {
         }
         @media (max-width: 700px) { .rv-featured-text { padding: 40px 28px; } .rv-featured-meta { padding: 40px 28px; } }
 
-        /* Gold quote mark */
+        /* Quote mark — subtle olive tint */
         .rv-quote-mark {
           font-family: 'Cormorant Garamond', serif;
-          font-size: 7rem; line-height: 0.6; color: var(--accent);
-          opacity: 0.3; display: block; margin-bottom: 8px; user-select: none;
+          font-size: 7rem; line-height: 0.6;
+          color: var(--olive-hi);
+          opacity: 0.22; display: block; margin-bottom: 8px; user-select: none;
         }
         /* Review text — charcoal on cream */
         .rv-review-text {
@@ -444,11 +456,11 @@ export default function ReviewsSection(): JSX.Element {
           transition: background 0.35s ease;
           border: none; text-align: left; color: inherit; width: 100%;
         }
-        /* Gold bottom reveal bar — matches About .ci-pillar::after */
+        /* Bottom reveal bar blends olive + gold */
         .rv-thumb::after {
           content: ''; position: absolute; bottom: 0; left: 0; right: 0;
           height: 3px;
-          background: linear-gradient(to right, var(--accent), var(--main-1));
+          background: linear-gradient(to right, var(--olive-hi), var(--accent), var(--main-1));
           transform: scaleX(0); transform-origin: left;
           transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
         }
@@ -457,13 +469,13 @@ export default function ReviewsSection(): JSX.Element {
         .rv-thumb:hover::after,
         .rv-thumb.rv-thumb--active::after { transform: scaleX(1); }
 
-        /* Thumb avatar — charcoal, gold initials */
+        /* Thumb avatar — olive initials */
         .rv-thumb-avatar {
           width: 36px; height: 36px;
           background: var(--main-1);
           display: flex; align-items: center; justify-content: center;
           font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem;
-          color: var(--accent); letter-spacing: 0.05em; margin-bottom: 10px;
+          color: var(--olive-hi); letter-spacing: 0.05em; margin-bottom: 10px;
           transition: transform 0.35s ease;
         }
         .rv-thumb:hover .rv-thumb-avatar,
@@ -490,7 +502,7 @@ export default function ReviewsSection(): JSX.Element {
           transition: background 0.3s, width 0.4s cubic-bezier(0.16,1,0.3,1);
           border: none;
         }
-        .rv-dot.rv-dot--active { background: var(--accent); width: 48px; }
+        .rv-dot.rv-dot--active { background: linear-gradient(90deg, var(--olive-hi), var(--accent)); width: 48px; }
 
         /* ── CTA ── */
         .rv-cta {
@@ -513,16 +525,16 @@ export default function ReviewsSection(): JSX.Element {
         .rv-cta-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
         @media (max-width: 760px) { .rv-cta-right { flex-wrap: wrap; } }
 
-        /* Primary button — gold bg, charcoal text (matches About .ci-cta style inverted) */
+        /* Primary button — gold on hover, add subtle olive shadow */
         .rv-btn-primary {
           display: inline-flex; align-items: center; gap: 14px;
           background: var(--main-1); color: var(--main-2);
           font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600;
           letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none;
-          padding: 18px 36px; transition: background .3s, gap .35s, transform .25s;
+          padding: 18px 36px; transition: background .3s, gap .35s, transform .25s, box-shadow .3s;
           white-space: nowrap;
         }
-        .rv-btn-primary:hover { background: var(--accent); color: var(--main-1); gap: 22px; transform: translateY(-2px); }
+        .rv-btn-primary:hover { background: var(--accent); color: var(--main-1); gap: 22px; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(138,158,74,0.08); }
 
         /* Ghost CTA — matches About .ci-cta exactly */
         .rv-btn-ghost {

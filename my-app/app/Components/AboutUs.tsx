@@ -153,27 +153,29 @@ export default function AboutSection(): JSX.Element {
     <>
       <style>{`
         :root {
-          --olive:      #6B733E;
-          --olive-d:    #3D4223;
-          --olive-dd:   #2A2E18;
+          /* shared cream + charcoal + olive + gold palette */
           --cream:      #F5F1E8;
-          --accent:     #C9A227;
+          --cream-94:   rgba(245,241,232,.94);
+          --charcoal:   #1C1C1C;
+          --muted:      #7A7060;
 
-          --olive-85:   rgba(107,115,62,.85);
-          --olive-70:   rgba(107,115,62,.70);
-          --olive-14:   rgba(107,115,62,.14);
-          --olive-07:   rgba(107,115,62,.07);
+          --olive:      #6B7A3A;
+          --olive-hi:   #8A9E4A;
+          --olive-d:    #3D4223;
+
+          --gold:       #C9A227;
           --accent-14:  rgba(201,162,39,.14);
           --accent-35:  rgba(201,162,39,.35);
+
           --shadow-ol:  rgba(107,115,62,.14);
-          --cream-94:   rgba(245,241,232,.94);
+          --ease:       cubic-bezier(0.25,0.46,0.45,0.94);
         }
 
         .ci-about *,.ci-about *::before,.ci-about *::after { box-sizing:border-box; margin:0; padding:0; }
 
         /* ── Warm cream base ── */
         .ci-about {
-          background:var(--cream); color:var(--olive);
+          background:var(--cream); color:var(--charcoal);
           font-family:'DM Sans',sans-serif; position:relative; overflow:hidden;
         }
 
@@ -183,10 +185,10 @@ export default function AboutSection(): JSX.Element {
           opacity:.018; pointer-events:none; z-index:50;
         }
 
-        /* Gold side bar */
+        /* Side bar uses gold + olive stop */
         .ci-side-bar {
           position:absolute; left:52px; top:-10%; width:2px; height:120%;
-          background:linear-gradient(to bottom,transparent 0%,var(--accent) 25%,var(--accent) 75%,transparent 100%);
+          background:linear-gradient(to bottom,transparent 0%,var(--gold) 20%,var(--olive-hi) 48%,var(--gold) 78%,transparent 100%);
           opacity:.2; pointer-events:none; z-index:1;
         }
 
@@ -205,9 +207,9 @@ export default function AboutSection(): JSX.Element {
         .ci-marquee-item {
           display:inline-flex; align-items:center; gap:18px; padding:0 28px; flex-shrink:0;
           font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:.14em;
-          color:var(--olive-85);
+          color:var(--olive-hi);
         }
-        .ci-mq-dot-cr { width:4px; height:4px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+        .ci-mq-dot-cr { width:4px; height:4px; border-radius:50%; background:var(--gold); flex-shrink:0; }
         .ci-mq-dot-nv { width:4px; height:4px; border-radius:50%; background:var(--olive); flex-shrink:0; }
 
         /* ── Stats ── */
@@ -222,43 +224,44 @@ export default function AboutSection(): JSX.Element {
         .ci-stat-num {
           display:block; font-family:'Bebas Neue',sans-serif;
           font-size:clamp(2.6rem,4vw,3.8rem); line-height:1; margin-bottom:6px;
-          color:var(--olive);
+          background:linear-gradient(120deg,var(--olive-hi),var(--gold));
+          -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
         }
-        .ci-stat-label { font-size:10px; font-weight:500; letter-spacing:.2em; text-transform:uppercase; color:var(--olive-70); }
+        .ci-stat-label { font-size:10px; font-weight:500; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); }
 
         /* ── Split ── */
         .ci-split { display:grid; grid-template-columns:1fr 1fr; gap:100px; align-items:center; padding:120px 0; }
         @media (max-width:960px) { .ci-split { grid-template-columns:1fr; gap:60px; padding:80px 0; } }
 
         .ci-eyebrow { display:flex; align-items:center; gap:14px; margin-bottom:30px; }
-        .ci-eyebrow-label { font-size:10.5px; font-weight:500; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-family:'DM Sans',sans-serif; }
-        .ci-line-draw { width:72px; height:1px; background:var(--accent); transform:scaleX(0); transform-origin:left center; }
+        .ci-eyebrow-label { font-size:10.5px; font-weight:500; letter-spacing:.24em; text-transform:uppercase; color:var(--gold); font-family:'DM Sans',sans-serif; }
+        .ci-line-draw { width:72px; height:1px; background:linear-gradient(90deg,var(--olive-hi),var(--gold)); transform:scaleX(0); transform-origin:left center; }
 
         .ci-heading-wrap { margin-bottom:36px; }
         .ci-heading-line {
           display:block; overflow:hidden;
           font-family:'Bebas Neue',sans-serif;
           font-size:clamp(3.8rem,9vw,8.5rem); line-height:.92; letter-spacing:.025em;
-          color:var(--olive);
+          color:var(--charcoal);
         }
         .ci-heading-accent {
           display:block; overflow:hidden;
           font-family:'Bebas Neue',sans-serif;
           font-size:clamp(3.8rem,9vw,8.5rem); line-height:.92; letter-spacing:.025em;
-          color:var(--accent);
+          color:var(--gold);
         }
 
         .ci-body-text {
           font-family:'Cormorant Garamond',serif;
           font-size:clamp(1.1rem,1.5vw,1.3rem); font-weight:600; line-height:1.8;
-          color:var(--olive); max-width:500px; margin-bottom:24px; font-style:italic;
+          color:var(--charcoal); max-width:500px; margin-bottom:24px; font-style:italic;
           -webkit-font-smoothing:antialiased;
         }
 
         .ci-cta {
           display:inline-flex; align-items:center; gap:12px;
           font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500;
-          letter-spacing:.2em; text-transform:uppercase; color:var(--accent);
+          letter-spacing:.2em; text-transform:uppercase; color:var(--gold);
           text-decoration:none; border-bottom:1px solid var(--accent-35);
           padding-bottom:5px; margin-top:16px;
           transition:gap .35s,border-color .35s,color .35s;
@@ -276,14 +279,14 @@ export default function AboutSection(): JSX.Element {
           overflow:hidden; border:4px solid var(--cream); z-index:2;
           box-shadow:0 8px 40px var(--shadow-ol);
         }
-        .ci-img-cover { position:absolute; inset:0; background:var(--accent); z-index:3; transform-origin:right center; }
+        .ci-img-cover { position:absolute; inset:0; background:var(--gold); z-index:3; transform-origin:right center; }
         .ci-img-main .ci-img-el,.ci-img-accent .ci-img-el { object-fit:cover; display:block; z-index:1; }
 
         .ci-img-label {
           position:absolute; bottom:16px; left:16px;
-          background:var(--cream-94); border-left:2px solid var(--accent);
+          background:var(--cream-94); border-left:2px solid var(--gold);
           padding:9px 14px; font-family:'DM Sans',sans-serif; font-size:10px;
-          letter-spacing:.16em; text-transform:uppercase; color:var(--accent);
+          letter-spacing:.16em; text-transform:uppercase; color:var(--charcoal);
           z-index:4; backdrop-filter:blur(8px);
         }
 
@@ -296,9 +299,9 @@ export default function AboutSection(): JSX.Element {
         }
         .ci-badge-since {
           font-family:'DM Sans',sans-serif; font-size:8.5px; letter-spacing:.22em;
-          text-transform:uppercase; color:rgba(245,241,232,.6); font-weight:600; margin-bottom:1px;
+          text-transform:uppercase; color:var(--cream-94); font-weight:600; margin-bottom:1px;
         }
-        .ci-badge-year { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; color:var(--accent); line-height:1; }
+        .ci-badge-year { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; color:var(--gold); line-height:1; }
 
         /* ── Pillars ── */
         .ci-pillars { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--accent-14); }
@@ -310,7 +313,7 @@ export default function AboutSection(): JSX.Element {
         .ci-pillar::after {
           content:''; position:absolute; bottom:0; left:0; right:0;
           height:3px;
-          background:linear-gradient(to right,var(--accent),var(--olive));
+          background:linear-gradient(to right,var(--gold),var(--olive));
           transform:scaleX(0); transform-origin:left; transition:transform .55s;
         }
         .ci-pillar:hover { background:rgba(245,241,232,.98); }
@@ -318,23 +321,23 @@ export default function AboutSection(): JSX.Element {
 
         .ci-pillar-bg-num {
           font-family:'Bebas Neue',sans-serif; font-size:5rem;
-          color:var(--olive-07); line-height:1;
+          color:rgba(107,115,62,.07); line-height:1;
           position:absolute; top:20px; right:24px;
           transition:color .45s; pointer-events:none; user-select:none;
         }
-        .ci-pillar:hover .ci-pillar-bg-num { color:var(--olive-14); }
+        .ci-pillar:hover .ci-pillar-bg-num { color:rgba(107,115,62,.14); }
 
         .ci-pillar-title {
           font-family:'Bebas Neue',sans-serif; font-size:2.1rem;
-          letter-spacing:.07em; color:var(--olive); margin-bottom:18px;
+          letter-spacing:.07em; color:var(--charcoal); margin-bottom:18px;
         }
         .ci-pillar-title::before {
           content:''; display:block; width:24px; height:1px;
-          background:var(--accent); margin-bottom:16px;
+          background:var(--gold); margin-bottom:16px;
         }
         .ci-pillar-body {
           font-family:'Cormorant Garamond',serif; font-size:1.08rem;
-          line-height:1.85; color:var(--olive); font-weight:600;
+          line-height:1.85; color:var(--charcoal); font-weight:600;
         }
 
         .ci-bottom-rule { height:1px; background:var(--accent-14); position:relative; z-index:2; }

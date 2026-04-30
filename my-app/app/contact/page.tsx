@@ -12,6 +12,26 @@ import { JSX, useEffect, useRef, useState } from "react";
   />
 */
 
+// ── GSAP type helpers (no `any`, no global augmentation) ──────────────────────
+type GsapInstance = {
+  registerPlugin: (...args: unknown[]) => void;
+  fromTo: (
+    targets: Element | Element[] | NodeListOf<Element> | null,
+    from: Record<string, unknown>,
+    to: Record<string, unknown>
+  ) => void;
+  set: (targets: unknown, vars: Record<string, unknown>) => void;
+};
+
+type ScrollTriggerInstance = {
+  getAll: () => Array<{ kill: () => void }>;
+};
+
+const getGsap = (): GsapInstance | undefined =>
+  (window as unknown as Record<string, unknown>)["gsap"] as GsapInstance | undefined;
+
+const getScrollTrigger = (): ScrollTriggerInstance | undefined =>
+  (window as unknown as Record<string, unknown>)["ScrollTrigger"] as ScrollTriggerInstance | undefined;
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -72,17 +92,16 @@ export default function ContactPage(): JSX.Element {
   const hasAnimated      = useRef<boolean>(false);
   const hasLoadedScripts = useRef<boolean>(false);
 
-  // Form state
-  const [form, setForm] = useState({ name: "", phone: "", message: "" });
+  const [form, setForm]       = useState({ name: "", phone: "", message: "" });
   const [focused, setFocused] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long" });
 
   useEffect(() => {
-    loadGSAP();
-    return () => { window.ScrollTrigger?.getAll().forEach((t) => t.kill()); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    void loadGSAP();
+    return () => { getScrollTrigger()?.getAll().forEach((t) => t.kill()); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadScript = (src: string): Promise<void> =>
@@ -105,121 +124,164 @@ export default function ContactPage(): JSX.Element {
     initAnimations();
   };
 
+  // Same gradient values as About's --gold variables
+  const GOLD_SPAN_STYLE = [
+    "display:inline-block",
+    "will-change:transform,opacity",
+    "background:linear-gradient(110deg,#6B4F16 0%,#C9A227 28%,#F0D878 50%,#C9A227 72%,#6B4F16 100%)",
+    "-webkit-background-clip:text",
+    "background-clip:text",
+    "-webkit-text-fill-color:transparent",
+  ].join(";");
+
+  const escapeHtml = (str: string) =>
+    str.replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]!));
+
   const initAnimations = (): void => {
-    const { gsap, ScrollTrigger } = window;
+    const gsap = getGsap();
+    const ScrollTrigger = getScrollTrigger();
     if (!gsap || !ScrollTrigger || hasAnimated.current) return;
     hasAnimated.current = true;
     gsap.registerPlugin(ScrollTrigger);
     const page = pageRef.current;
     if (!page) return;
 
-    // Hero char reveal
+    // Hero char-splitting — same pattern as About's fixed version.
+    // Gold gradient is stamped directly on each char span (not the parent)
+    // because background-clip:text does NOT paint through display:inline-block children.
+    // Gold chars get no clearProps so GSAP never touches the gradient inline styles.
     page.querySelectorAll<HTMLElement>(".cp-hero-line").forEach((line) => {
+      const isGold = line.classList.contains("gold");
       const text = line.textContent ?? "";
-      line.innerHTML = text.split("").map((c) =>
-        c.trim() === ""
-          ? `<span style="display:inline-block;width:0.28em"> </span>`
-          : `<span class="cp-char" style="display:inline-block">${c}</span>`
+      line.innerHTML = Array.from(text).map((c) =>
+        c === " "
+          ? `<span style="display:inline-block;width:0.28em">&nbsp;</span>`
+          : isGold
+            ? `<span class="cp-char cp-char-gold" style="${GOLD_SPAN_STYLE}">${escapeHtml(c)}</span>`
+            : `<span class="cp-char" style="display:inline-block;will-change:transform,opacity">${escapeHtml(c)}</span>`
       ).join("");
     });
 
-    gsap.fromTo(
-      page.querySelectorAll<HTMLElement>(".cp-char"),
-      { yPercent: 110, rotationX: -40, opacity: 0 },
-      { yPercent: 0, rotationX: 0, opacity: 1, stagger: 0.016, duration: 0.85, ease: "power3.out", delay: 0.2 }
-    );
+    const plainChars = page.querySelectorAll<HTMLElement>(".cp-char:not(.cp-char-gold)");
+    const goldChars  = page.querySelectorAll<HTMLElement>(".cp-char-gold");
+
+    if (plainChars.length) {
+      gsap.fromTo(
+        plainChars,
+        { yPercent: 110, rotationX: -40, opacity: 0 } as Record<string, unknown>,
+        { yPercent: 0, rotationX: 0, opacity: 1, stagger: 0.016, duration: 0.85, ease: "power3.out", delay: 0.2, clearProps: "transform,opacity" } as Record<string, unknown>
+      );
+    }
+
+    if (goldChars.length) {
+      // No clearProps — gradient is in inline style, must not be disturbed
+      gsap.fromTo(
+        goldChars,
+        { yPercent: 110, rotationX: -40, opacity: 0 } as Record<string, unknown>,
+        { yPercent: 0, rotationX: 0, opacity: 1, stagger: 0.016, duration: 0.85, ease: "power3.out", delay: 0.2 } as Record<string, unknown>
+      );
+    }
 
     gsap.fromTo(
       page.querySelector<HTMLElement>(".cp-hero-eyebrow"),
-      { y: 20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1, ease: "power2.out", delay: 0.15 }
+      { y: 20, opacity: 0 } as Record<string, unknown>,
+      { y: 0, opacity: 1, duration: 1, ease: "power2.out", delay: 0.15, clearProps: "transform,opacity" } as Record<string, unknown>
     );
 
     gsap.fromTo(
       page.querySelector<HTMLElement>(".cp-hero-sub"),
-      { y: 24, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1, ease: "power2.out", delay: 0.9 }
+      { y: 24, opacity: 0 } as Record<string, unknown>,
+      { y: 0, opacity: 1, duration: 1, ease: "power2.out", delay: 0.9, clearProps: "transform,opacity" } as Record<string, unknown>
     );
 
     // Line draws
     page.querySelectorAll<HTMLElement>(".cp-line-draw").forEach((el) => {
-      gsap.fromTo(el, { scaleX: 0 }, {
+      gsap.fromTo(el, { scaleX: 0 } as Record<string, unknown>, {
         scaleX: 1, duration: 1.4, ease: "power3.out", transformOrigin: "left center",
         scrollTrigger: { trigger: el, start: "top 82%" },
-      });
+      } as Record<string, unknown>);
     });
 
     // Contact method cards
     gsap.fromTo(
       page.querySelectorAll<HTMLElement>(".cp-method-card"),
-      { y: 60, opacity: 0 },
+      { y: 60, opacity: 0 } as Record<string, unknown>,
       {
         y: 0, opacity: 1, stagger: 0.12, duration: 1, ease: "power3.out",
+        clearProps: "transform,opacity",
         scrollTrigger: { trigger: page.querySelector(".cp-methods"), start: "top 80%" },
-      }
+      } as Record<string, unknown>
     );
 
     // Hours rows
     gsap.fromTo(
       page.querySelectorAll<HTMLElement>(".cp-hour-row"),
-      { x: -30, opacity: 0 },
+      { x: -30, opacity: 0 } as Record<string, unknown>,
       {
         x: 0, opacity: 1, stagger: 0.06, duration: 0.7, ease: "power2.out",
+        clearProps: "transform,opacity",
         scrollTrigger: { trigger: page.querySelector(".cp-hours"), start: "top 82%" },
-      }
+      } as Record<string, unknown>
     );
 
     // Form panel
     gsap.fromTo(
       page.querySelector<HTMLElement>(".cp-form-panel"),
-      { x: 50, opacity: 0 },
+      { x: 50, opacity: 0 } as Record<string, unknown>,
       {
         x: 0, opacity: 1, duration: 1.1, ease: "power3.out",
+        clearProps: "transform,opacity",
         scrollTrigger: { trigger: page.querySelector(".cp-form-panel"), start: "top 80%" },
-      }
+      } as Record<string, unknown>
     );
 
     // Map section
     gsap.fromTo(
       page.querySelector<HTMLElement>(".cp-map-section"),
-      { y: 40, opacity: 0 },
+      { y: 40, opacity: 0 } as Record<string, unknown>,
       {
         y: 0, opacity: 1, duration: 1, ease: "power2.out",
+        clearProps: "transform,opacity",
         scrollTrigger: { trigger: page.querySelector(".cp-map-section"), start: "top 82%" },
-      }
+      } as Record<string, unknown>
     );
 
     // Fade ups
     page.querySelectorAll<HTMLElement>(".cp-fade-up").forEach((el) => {
-      gsap.fromTo(el, { y: 40, opacity: 0 }, {
+      gsap.fromTo(el, { y: 40, opacity: 0 } as Record<string, unknown>, {
         y: 0, opacity: 1, duration: 0.9, ease: "power2.out",
+        clearProps: "transform,opacity",
         scrollTrigger: { trigger: el, start: "top 84%" },
-      });
+      } as Record<string, unknown>);
     });
   };
 
   const handleSubmit = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!form.name || !form.message) return;
-    // Compose a mailto as fallback — primary CTA is to call
     setSubmitted(true);
   };
 
   return (
     <>
       <style>{`
+        /* ── About-matching palette ── */
         :root {
-          --gold:       #C9A84C;
+          --cream:      #F5F1E8;
+          --cream-s:    #EDE7D6;
+          --cream-d:    #E3D9C5;
+          --charcoal:   #1C1C1C;
+          --charcoal-lt:#5A5A5A;
+          --gold:       #C9A227;
+          --gold-b:     #E0B83A;
           --gold-light: #F0D878;
           --gold-dim:   #6B4F16;
-          --ink:        #080705;
-          --ink2:       #0F0E0C;
-          --ink3:       #141210;
-          --warm:       #F0EAD6;
-          --muted:      #7A7060;
-          --body-text:  rgba(240,234,214,0.82);
-          --border:     rgba(201,168,76,0.15);
-          --border-h:   rgba(201,168,76,0.35);
+          --border:     rgba(201,162,39,0.18);
+          --olive:      #6B7A3A;
+          --olive-hi:   #8A9E4A;
+          --olive-lo:   #47531F;
+          --muted:      var(--charcoal-lt);
+          --body-text:  rgba(28,28,28,0.82);
         }
 
         .cp-page *, .cp-page *::before, .cp-page *::after {
@@ -227,95 +289,88 @@ export default function ContactPage(): JSX.Element {
         }
 
         .cp-page {
-          background: var(--ink);
-          color: var(--warm);
+          background: var(--cream);
+          color: var(--charcoal);
           font-family: 'DM Sans', sans-serif;
           position: relative; overflow-x: hidden;
         }
 
-        /* Grain */
+        /* Grain overlay — same as About */
         .cp-page::after {
           content: '';
           position: fixed; inset: 0; z-index: 200;
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-          opacity: 0.028; pointer-events: none;
+          opacity: 0.022; pointer-events: none;
         }
 
         .cp-inner {
-          max-width: 1320px; margin: 0 auto;
+          max-width: 1360px; margin: 0 auto;
           padding: 0 80px; position: relative; z-index: 2;
         }
         @media (max-width: 900px) { .cp-inner { padding: 0 24px; } }
-
-        /* ─── DECORATIVE VERTICAL LINES ─── */
-        .cp-vert-line {
-          position: fixed; top: 0; bottom: 0; width: 1px;
-          background: linear-gradient(to bottom, transparent, var(--gold) 20%, var(--gold) 80%, transparent);
-          opacity: 0.1; pointer-events: none; z-index: 1;
-        }
-        .cp-vert-line-l { left: 52px; }
-        .cp-vert-line-r { right: 52px; }
-        @media (max-width: 900px) { .cp-vert-line { display: none; } }
 
         /* ─── HERO ─── */
         .cp-hero {
           min-height: 72vh;
           display: flex; flex-direction: column; justify-content: flex-end;
-          padding-bottom: 100px; padding-top: 100px; position: relative;
+          padding-bottom: 100px; padding-top: 100px;
+          position: relative;
           border-bottom: 1px solid var(--border);
           overflow: hidden;
           margin-top: 80px;
         }
 
-        /* Animated radial glow behind heading */
+        /* Radial glow — olive tint to match About's palette */
         .cp-hero-glow {
           position: absolute;
-          width: 900px; height: 900px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+          width: 900px; height: 900px; border-radius: 50%;
+          background: radial-gradient(circle, rgba(138,158,74,0.07) 0%, transparent 70%);
           top: -200px; left: -100px;
           pointer-events: none; z-index: 0;
-          animation: glowPulse 6s ease-in-out infinite;
+          animation: cpGlowPulse 6s ease-in-out infinite;
         }
-        @keyframes glowPulse {
+        @keyframes cpGlowPulse {
           0%, 100% { opacity: 0.5; transform: scale(1); }
           50%       { opacity: 1;   transform: scale(1.08); }
         }
 
-        /* Large background text */
+        /* Large bg watermark */
         .cp-hero-bg-text {
           position: absolute; bottom: -30px; right: -20px;
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(10rem, 24vw, 24rem);
           line-height: 1; letter-spacing: 0.04em;
-          color: rgba(201,168,76,0.03);
+          color: rgba(107,122,58,0.05);
           pointer-events: none; user-select: none; z-index: 0;
           white-space: nowrap;
         }
 
         .cp-hero-eyebrow {
-          display: flex; align-items: center; gap: 14px; margin-bottom: 28px; position: relative; z-index: 2;
+          display: flex; align-items: center; gap: 14px;
+          margin-bottom: 28px; position: relative; z-index: 2;
         }
         .cp-hero-eyebrow-label {
-          font-size: 10px; font-weight: 500; letter-spacing: 0.28em;
-          text-transform: uppercase; color: var(--gold);
+          font-size: 10px; font-weight: 600; letter-spacing: 0.28em;
+          text-transform: uppercase; color: var(--olive-hi);
         }
         .cp-hero-eyebrow-line {
-          width: 60px; height: 1px; background: var(--gold); opacity: 0.6;
+          width: 60px; height: 1px;
+          background: linear-gradient(90deg, var(--olive-hi), var(--gold));
+          opacity: 0.8;
         }
 
         .cp-hero-heading { position: relative; z-index: 2; margin-bottom: 32px; }
+
         .cp-hero-line {
-          display: block; overflow: hidden;
+          display: block;
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(5rem, 13vw, 13rem);
           line-height: 0.87; letter-spacing: 0.02em;
-          color: var(--warm);
+          color: var(--charcoal);
         }
+        /* Parent .gold is transparent — gradient lives on each char span (see JS) */
         .cp-hero-line.gold {
-          background: linear-gradient(110deg, var(--gold-dim) 0%, var(--gold) 28%, var(--gold-light) 50%, var(--gold) 72%, var(--gold-dim) 100%);
-          -webkit-background-clip: text; background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: transparent;
         }
 
         .cp-hero-sub {
@@ -326,9 +381,7 @@ export default function ContactPage(): JSX.Element {
         }
 
         /* ─── CONTACT METHOD CARDS ─── */
-        .cp-methods-section {
-          padding: 100px 0 0;
-        }
+        .cp-methods-section { padding: 100px 0 0; }
 
         .cp-methods {
           display: grid; grid-template-columns: repeat(3, 1fr);
@@ -337,25 +390,25 @@ export default function ContactPage(): JSX.Element {
         @media (max-width: 780px) { .cp-methods { grid-template-columns: 1fr; } }
 
         .cp-method-card {
-          background: var(--ink2);
+          background: var(--cream-s);
           padding: 52px 44px;
           position: relative; overflow: hidden;
           transition: background 0.4s ease;
           display: flex; flex-direction: column; gap: 0;
         }
-        .cp-method-card:hover { background: var(--ink3); }
+        .cp-method-card:hover { background: var(--cream-d); }
 
-        /* Top gold sliver on hover */
         .cp-method-card::before {
           content: ''; position: absolute; top: 0; left: 0; right: 0;
-          height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent);
+          height: 2px;
+          background: linear-gradient(90deg, transparent, var(--olive-hi), var(--gold), transparent);
           transform: scaleX(0); transform-origin: center;
           transition: transform 0.55s ease;
         }
         .cp-method-card:hover::before { transform: scaleX(1); }
 
         .cp-method-icon {
-          width: 40px; height: 40px; color: var(--gold);
+          width: 40px; height: 40px; color: var(--olive-hi);
           margin-bottom: 28px; flex-shrink: 0;
           transition: transform 0.4s ease;
         }
@@ -363,13 +416,13 @@ export default function ContactPage(): JSX.Element {
 
         .cp-method-label {
           font-size: 9.5px; letter-spacing: 0.28em; text-transform: uppercase;
-          color: var(--muted); margin-bottom: 12px; font-weight: 500;
+          color: var(--muted); margin-bottom: 12px; font-weight: 600;
         }
 
         .cp-method-value {
           font-family: 'Bebas Neue', sans-serif;
           font-size: 1.8rem; letter-spacing: 0.04em; line-height: 1.1;
-          color: var(--warm); margin-bottom: 6px;
+          color: var(--charcoal); margin-bottom: 6px;
         }
 
         .cp-method-sub {
@@ -379,18 +432,18 @@ export default function ContactPage(): JSX.Element {
 
         .cp-method-cta {
           display: inline-flex; align-items: center; gap: 10px;
-          font-size: 10px; font-weight: 500; letter-spacing: 0.2em;
-          text-transform: uppercase; color: var(--gold);
+          font-size: 10px; font-weight: 600; letter-spacing: 0.2em;
+          text-transform: uppercase; color: var(--olive-hi);
           text-decoration: none;
-          border-bottom: 1px solid rgba(201,168,76,0.3); padding-bottom: 4px;
+          border-bottom: 1px solid rgba(138,158,74,0.3); padding-bottom: 4px;
           transition: gap 0.3s ease, color 0.3s ease;
           align-self: flex-start;
         }
-        .cp-method-cta:hover { gap: 16px; color: var(--gold-light); }
+        .cp-method-cta:hover { gap: 16px; color: var(--gold); }
         .cp-method-cta svg { transition: transform 0.3s ease; }
         .cp-method-cta:hover svg { transform: translateX(4px); }
 
-        /* ─── MAIN CONTENT: HOURS + FORM ─── */
+        /* ─── HOURS + FORM ─── */
         .cp-content {
           display: grid; grid-template-columns: 1fr 1.1fr;
           gap: 0; align-items: start;
@@ -398,11 +451,8 @@ export default function ContactPage(): JSX.Element {
           border-top: 1px solid var(--border);
           margin-top: 100px;
         }
-        @media (max-width: 900px) {
-          .cp-content { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 900px) { .cp-content { grid-template-columns: 1fr; } }
 
-        /* Hours panel */
         .cp-hours-panel {
           padding-right: 80px;
           border-right: 1px solid var(--border);
@@ -415,19 +465,20 @@ export default function ContactPage(): JSX.Element {
           display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
         }
         .cp-eyebrow-label {
-          font-size: 10px; font-weight: 500; letter-spacing: 0.26em;
-          text-transform: uppercase; color: var(--gold);
+          font-size: 10px; font-weight: 600; letter-spacing: 0.26em;
+          text-transform: uppercase; color: var(--olive-hi);
         }
         .cp-line-draw {
-          height: 1px; width: 52px; background: var(--gold);
-          transform: scaleX(0); transform-origin: left center;
+          height: 1px; width: 52px;
+          background: linear-gradient(90deg, var(--olive-hi), var(--gold));
+          transform: scaleX(0); transform-origin: left center; flex-shrink: 0;
         }
 
         .cp-section-heading {
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(3rem, 6vw, 5.5rem);
           line-height: 0.9; letter-spacing: 0.03em;
-          color: var(--warm); margin-bottom: 48px;
+          color: var(--charcoal); margin-bottom: 48px;
         }
         .cp-section-heading .g {
           background: linear-gradient(110deg, var(--gold-dim) 0%, var(--gold) 30%, var(--gold-light) 55%, var(--gold) 75%, var(--gold-dim) 100%);
@@ -445,82 +496,72 @@ export default function ContactPage(): JSX.Element {
           transition: padding-left 0.35s ease;
         }
         .cp-hour-row:first-child { border-top: 1px solid var(--border); }
-        .cp-hour-row.today {
-          padding-left: 16px;
-        }
+        .cp-hour-row.today { padding-left: 16px; }
         .cp-hour-row.today::before {
           content: '';
           position: absolute; left: 0; top: 0; bottom: 0;
-          width: 2px; background: var(--gold);
+          width: 2px; background: var(--olive-hi);
         }
 
         .cp-hour-day {
           font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-          color: var(--muted); font-weight: 500;
+          color: var(--muted); font-weight: 600;
           transition: color 0.3s ease;
         }
-        .cp-hour-row.today .cp-hour-day { color: var(--warm); }
+        .cp-hour-row.today .cp-hour-day { color: var(--charcoal); }
 
         .cp-hour-time {
           font-family: 'Cormorant Garamond', serif; font-style: italic;
           font-size: 1.05rem; color: var(--body-text);
           transition: color 0.3s ease;
         }
-        .cp-hour-row.today .cp-hour-time { color: var(--gold); }
+        .cp-hour-row.today .cp-hour-time { color: var(--olive-hi); }
 
         .cp-hour-badge {
           font-size: 8.5px; letter-spacing: 0.2em; text-transform: uppercase;
-          background: var(--gold); color: var(--ink);
+          background: var(--olive-hi); color: #fff;
           padding: 3px 8px; font-weight: 600; margin-left: 10px;
           display: inline-block;
         }
 
-        /* Form panel */
-        .cp-form-panel {
-          padding-left: 80px;
-        }
+        /* ─── FORM ─── */
+        .cp-form-panel { padding-left: 80px; }
         @media (max-width: 900px) { .cp-form-panel { padding-left: 0; } }
 
         .cp-form { display: flex; flex-direction: column; gap: 0; }
 
-        .cp-field {
-          position: relative; margin-bottom: 2px;
-        }
+        .cp-field { position: relative; margin-bottom: 2px; }
 
         .cp-field-label {
           font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase;
-          color: var(--muted); font-weight: 500;
+          color: var(--muted); font-weight: 600;
           position: absolute; top: 20px; left: 24px;
-          transition: all 0.3s ease; pointer-events: none;
-          z-index: 2;
+          transition: all 0.3s ease; pointer-events: none; z-index: 2;
         }
-
         .cp-field.active .cp-field-label,
         .cp-field.filled .cp-field-label {
-          top: 12px; font-size: 8px; color: var(--gold);
+          top: 12px; font-size: 8px; color: var(--olive-hi);
         }
 
         .cp-input, .cp-textarea {
-          width: 100%; background: var(--ink2);
+          width: 100%; background: var(--cream-s);
           border: none; border-bottom: 1px solid var(--border);
-          color: var(--warm); font-family: 'DM Sans', sans-serif;
+          color: var(--charcoal); font-family: 'DM Sans', sans-serif;
           font-size: 0.95rem; padding: 36px 24px 16px;
           outline: none; resize: none;
           transition: background 0.3s ease, border-color 0.3s ease;
         }
         .cp-input:focus, .cp-textarea:focus {
-          background: var(--ink3);
-          border-bottom-color: var(--gold);
+          background: var(--cream-d);
+          border-bottom-color: var(--olive-hi);
         }
         .cp-textarea { min-height: 140px; }
 
-        /* Focus line effect */
         .cp-field-line {
           position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
-          background: var(--gold);
+          background: linear-gradient(90deg, var(--olive-hi), var(--gold));
           transform: scaleX(0); transform-origin: left;
-          transition: transform 0.4s ease;
-          pointer-events: none;
+          transition: transform 0.4s ease; pointer-events: none;
         }
         .cp-field.active .cp-field-line { transform: scaleX(1); }
 
@@ -533,7 +574,7 @@ export default function ContactPage(): JSX.Element {
 
         .cp-submit-btn {
           display: inline-flex; align-items: center; gap: 14px;
-          background: var(--gold); color: var(--ink);
+          background: var(--charcoal); color: var(--cream);
           font-size: 10.5px; font-weight: 600; letter-spacing: 0.24em;
           text-transform: uppercase; border: none; cursor: pointer;
           padding: 20px 48px; position: relative; overflow: hidden;
@@ -542,7 +583,7 @@ export default function ContactPage(): JSX.Element {
         }
         .cp-submit-btn::before {
           content: ''; position: absolute; inset: 0;
-          background: var(--gold-light);
+          background: var(--olive);
           transform: translateX(-100%);
           transition: transform 0.4s ease;
         }
@@ -552,22 +593,22 @@ export default function ContactPage(): JSX.Element {
         .cp-submit-btn svg { transition: transform 0.35s ease; }
         .cp-submit-btn:hover svg { transform: translateX(4px); }
 
-        /* Success state */
+        /* Success */
         .cp-success {
-          padding: 48px; background: var(--ink2);
-          border-left: 2px solid var(--gold);
+          padding: 48px; background: var(--cream-s);
+          border-left: 2px solid var(--olive-hi);
           display: flex; flex-direction: column; gap: 12px;
         }
         .cp-success-title {
           font-family: 'Bebas Neue', sans-serif; font-size: 2rem;
-          letter-spacing: 0.06em; color: var(--warm);
+          letter-spacing: 0.06em; color: var(--charcoal);
         }
         .cp-success-body {
           font-family: 'Cormorant Garamond', serif; font-style: italic;
           font-size: 1.1rem; color: var(--body-text); line-height: 1.75;
         }
 
-        /* ─── MAP SECTION ─── */
+        /* ─── MAP ─── */
         .cp-map-section {
           border-top: 1px solid var(--border);
           padding: 0 0 100px;
@@ -581,19 +622,14 @@ export default function ContactPage(): JSX.Element {
         .cp-map-frame {
           width: 100%; height: 440px; position: relative;
           overflow: hidden;
-          filter: grayscale(0.6) contrast(1.1);
+          filter: grayscale(0.5) contrast(1.05);
         }
-        .cp-map-frame iframe {
-          width: 100%; height: 100%; border: none; display: block;
-        }
-        /* Gold overlay tint on map */
+        .cp-map-frame iframe { width: 100%; height: 100%; border: none; display: block; }
         .cp-map-frame::after {
           content: ''; position: absolute; inset: 0;
-          background: rgba(201,168,76,0.04);
+          background: rgba(107,122,58,0.04);
           pointer-events: none; z-index: 2;
-          mix-blend-mode: multiply;
         }
-        /* Border frame */
         .cp-map-frame::before {
           content: ''; position: absolute; inset: 0;
           border: 1px solid var(--border);
@@ -602,28 +638,29 @@ export default function ContactPage(): JSX.Element {
 
         .cp-map-tag {
           position: absolute; bottom: 24px; left: 24px; z-index: 4;
-          background: rgba(8,7,5,0.92); border-left: 2px solid var(--gold);
+          background: rgba(245,241,232,0.95);
+          border-left: 2px solid var(--olive-hi);
           padding: 14px 20px; backdrop-filter: blur(12px);
           display: flex; flex-direction: column; gap: 4px;
         }
         .cp-map-tag-name {
           font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem;
-          letter-spacing: 0.08em; color: var(--warm);
+          letter-spacing: 0.08em; color: var(--charcoal);
         }
         .cp-map-tag-addr {
           font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase;
-          color: var(--gold);
+          color: var(--olive-hi);
         }
 
         .cp-map-directions {
           display: inline-flex; align-items: center; gap: 10px;
-          font-size: 10px; font-weight: 500; letter-spacing: 0.2em;
+          font-size: 10px; font-weight: 600; letter-spacing: 0.2em;
           text-transform: uppercase; color: var(--muted);
           text-decoration: none;
-          border-bottom: 1px solid rgba(122,112,96,0.3); padding-bottom: 4px;
-          transition: color 0.3s ease;
+          border-bottom: 1px solid rgba(90,90,90,0.25); padding-bottom: 4px;
+          transition: color 0.3s ease, border-color 0.3s ease;
         }
-        .cp-map-directions:hover { color: var(--gold); }
+        .cp-map-directions:hover { color: var(--olive-hi); border-bottom-color: var(--olive-hi); }
 
         /* ─── BOTTOM STRIP ─── */
         .cp-bottom {
@@ -635,29 +672,29 @@ export default function ContactPage(): JSX.Element {
         .cp-bottom-item {
           padding: 48px 52px;
           border-right: 1px solid var(--border);
+          background: var(--cream-s);
           display: flex; flex-direction: column; gap: 10px;
         }
         .cp-bottom-item:last-child { border-right: none; }
 
         .cp-bottom-label {
           font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
-          color: var(--gold); font-weight: 500;
+          color: var(--olive-hi); font-weight: 600;
         }
         .cp-bottom-value {
           font-family: 'Cormorant Garamond', serif; font-style: italic;
           font-size: 1.1rem; line-height: 1.65; color: var(--body-text);
         }
-        .cp-bottom-value a { color: var(--gold); text-decoration: none; transition: color 0.3s; }
-        .cp-bottom-value a:hover { color: var(--gold-light); }
+        .cp-bottom-value a { color: var(--olive-hi); text-decoration: none; transition: color 0.3s; }
+        .cp-bottom-value a:hover { color: var(--gold); }
 
         @media (prefers-reduced-motion: reduce) {
-          .cp-hero-glow, .cp-hero-scroll-line { animation: none !important; }
+          .cp-hero-glow { animation: none !important; }
+          * { transition: none !important; }
         }
       `}</style>
 
       <div className="cp-page" ref={pageRef} id="contact">
-        <div className="cp-vert-line cp-vert-line-l" aria-hidden="true" />
-        <div className="cp-vert-line cp-vert-line-r" aria-hidden="true" />
 
         {/* ─── HERO ─── */}
         <section className="cp-hero">
@@ -677,7 +714,7 @@ export default function ContactPage(): JSX.Element {
 
             <p className="cp-hero-sub">
               Walk-ins always welcome. Call us on{" "}
-              <a href="tel:01784449005" style={{ color: "var(--gold)", textDecoration: "none" }}>01784 449005</a>{" "}
+              <a href="tel:01784449005" style={{ color: "var(--olive-hi)", textDecoration: "none" }}>01784 449005</a>{" "}
               or drop us a message below.
             </p>
           </div>
@@ -694,7 +731,12 @@ export default function ContactPage(): JSX.Element {
                   <div className="cp-method-value">{m.value}</div>
                   <div className="cp-method-sub">{m.sub}</div>
                   {m.href && m.cta && (
-                    <a href={m.href} className="cp-method-cta" target={m.href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer">
+                    <a
+                      href={m.href}
+                      className="cp-method-cta"
+                      target={m.href.startsWith("http") ? "_blank" : undefined}
+                      rel="noopener noreferrer"
+                    >
                       {m.cta}
                       <svg width="18" height="10" viewBox="0 0 18 10" fill="none" aria-hidden="true">
                         <path d="M1 5h16M11 1l5 4-5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -707,7 +749,7 @@ export default function ContactPage(): JSX.Element {
           </div>
         </section>
 
-        {/* ─── HOURS + MESSAGE FORM ─── */}
+        {/* ─── HOURS + FORM ─── */}
         <div className="cp-inner">
           <div className="cp-content">
 
@@ -723,15 +765,10 @@ export default function ContactPage(): JSX.Element {
 
               <div className="cp-hours">
                 {HOURS.map((h) => (
-                  <div
-                    key={h.day}
-                    className={`cp-hour-row${h.day === today ? " today" : ""}`}
-                  >
+                  <div key={h.day} className={`cp-hour-row${h.day === today ? " today" : ""}`}>
                     <span className="cp-hour-day">
                       {h.day}
-                      {h.day === today && (
-                        <span className="cp-hour-badge">Today</span>
-                      )}
+                      {h.day === today && <span className="cp-hour-badge">Today</span>}
                     </span>
                     <span className="cp-hour-time">{h.time}</span>
                   </div>
@@ -739,7 +776,7 @@ export default function ContactPage(): JSX.Element {
               </div>
             </div>
 
-            {/* Message Form */}
+            {/* Form */}
             <div className="cp-form-panel">
               <div className="cp-eyebrow">
                 <span className="cp-eyebrow-label">Send A Message</span>
@@ -754,12 +791,12 @@ export default function ContactPage(): JSX.Element {
                   <div className="cp-success-title">Message Received</div>
                   <p className="cp-success-body">
                     Thanks for getting in touch. We&apos;ll get back to you as soon as possible —
-                    or give us a call on <a href="tel:01784449005" style={{ color: "var(--gold)" }}>01784 449005</a>.
+                    or give us a call on{" "}
+                    <a href="tel:01784449005" style={{ color: "var(--olive-hi)" }}>01784 449005</a>.
                   </p>
                 </div>
               ) : (
                 <div className="cp-form">
-                  {/* Name */}
                   <div className={`cp-field${focused === "name" ? " active" : ""}${form.name ? " filled" : ""}`}>
                     <label className="cp-field-label" htmlFor="cp-name">Your Name</label>
                     <input id="cp-name" className="cp-input" type="text" autoComplete="name"
@@ -768,7 +805,6 @@ export default function ContactPage(): JSX.Element {
                     <span className="cp-field-line" />
                   </div>
 
-                  {/* Phone */}
                   <div className={`cp-field${focused === "phone" ? " active" : ""}${form.phone ? " filled" : ""}`}>
                     <label className="cp-field-label" htmlFor="cp-phone">Phone (optional)</label>
                     <input id="cp-phone" className="cp-input" type="tel" autoComplete="tel"
@@ -777,7 +813,6 @@ export default function ContactPage(): JSX.Element {
                     <span className="cp-field-line" />
                   </div>
 
-                  {/* Message */}
                   <div className={`cp-field${focused === "message" ? " active" : ""}${form.message ? " filled" : ""}`}>
                     <label className="cp-field-label" htmlFor="cp-message">Your Message</label>
                     <textarea id="cp-message" className="cp-textarea"
@@ -788,7 +823,7 @@ export default function ContactPage(): JSX.Element {
 
                   <p className="cp-form-note">
                     Or call us directly on{" "}
-                    <a href="tel:01784449005" style={{ color: "var(--gold)", textDecoration: "none" }}>01784 449005</a>{" "}
+                    <a href="tel:01784449005" style={{ color: "var(--olive-hi)", textDecoration: "none" }}>01784 449005</a>{" "}
                     — we&apos;re happy to help.
                   </p>
 

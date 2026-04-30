@@ -182,6 +182,11 @@ export default function OffersSection(): JSX.Element {
           --gold:        #C9A227;
           --gold-b:      #E0B83A;
           --border:      rgba(201,162,39,0.18);
+
+          /* Olive / green accents (from Hero) */
+          --olive:       #6B7A3A;
+          --olive-hi:    #8A9E4A;
+          --olive-lo:    #47531F;
         }
 
         .of-section *, .of-section *::before, .of-section *::after {
@@ -199,9 +204,10 @@ export default function OffersSection(): JSX.Element {
           opacity: 0.018; pointer-events: none; z-index: 40;
         }
 
+        /* include a subtle olive stop in the vertical accent bar */
         .of-vbar {
           position: absolute; left: 52px; top: -8%; width: 2px; height: 118%;
-          background: linear-gradient(to bottom, transparent, var(--gold) 25%, var(--gold) 75%, transparent);
+          background: linear-gradient(to bottom, transparent, var(--gold) 22%, var(--olive-hi) 48%, var(--gold) 74%, transparent 100%);
           opacity: 0.2; pointer-events: none; z-index: 1;
         }
 
@@ -265,7 +271,8 @@ export default function OffersSection(): JSX.Element {
           background: var(--gold); padding: 12px 24px 10px;
           display: flex; flex-direction: column; align-items: flex-start;
         }
-        .of-dpc-label { font-size: 7.5px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(28,28,28,0.5); }
+        /* use a subtle olive tone for the small label */
+        .of-dpc-label { font-size: 7.5px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: var(--olive-lo); }
         .of-dpc-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.6rem; line-height: 0.88; color: var(--charcoal); }
 
         /* Dark body */
@@ -289,8 +296,9 @@ export default function OffersSection(): JSX.Element {
         }
 
         .of-dark-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+        /* blend gold + olive in the list rule */
         .of-dark-list li { display: flex; align-items: center; gap: 12px; font-size: 0.88rem; font-weight: 500; color: rgba(245,241,232,0.78); -webkit-font-smoothing: antialiased; }
-        .of-dark-list li::before { content: ''; width: 18px; height: 1px; background: linear-gradient(to right, var(--gold), var(--gold-b)); flex-shrink: 0; }
+        .of-dark-list li::before { content: ''; width: 18px; height: 1px; background: linear-gradient(to right, var(--gold), var(--olive-hi)); flex-shrink: 0; }
 
         .of-dark-footer {
           margin-top: auto; padding-top: 28px; border-top: 1px solid rgba(201,162,39,0.14);
@@ -322,14 +330,15 @@ export default function OffersSection(): JSX.Element {
         }
         .of-card-light:hover { background: var(--cream-d); box-shadow: 0 28px 80px rgba(28,28,28,0.07); }
 
-        /* Gold top accent bar */
-        .of-light-top-bar { height: 3px; background: linear-gradient(to right, var(--gold), var(--gold-b), var(--charcoal)); }
+        /* Gold top accent bar — now blends gold → olive → charcoal */
+        .of-light-top-bar { height: 3px; background: linear-gradient(to right, var(--gold), var(--olive-hi), var(--charcoal)); }
 
         .of-light-body { padding: 40px 40px 44px; display: flex; flex-direction: column; flex: 1; }
         @media (max-width: 700px) { .of-light-body { padding: 30px 24px 36px; } }
 
         .of-light-tag-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
-        .of-tag-outline { font-size: 8.5px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold); padding: 5px 12px; display: inline-block; }
+        /* make the tag outline use olive so the light card picks up green */
+        .of-tag-outline { font-size: 8.5px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: var(--olive-hi); border: 1px solid var(--olive-hi); padding: 5px 12px; display: inline-block; }
         .of-expiry-dark { font-size: 8.5px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--charcoal-lt); border: 1px solid rgba(28,28,28,0.18); padding: 5px 12px; display: inline-block; }
 
         /* Ghost price as large decorative background */
@@ -364,7 +373,7 @@ export default function OffersSection(): JSX.Element {
         .of-price-label { font-size: 9.5px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--charcoal-lt); }
         .of-price-big { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 4.5vw, 4.2rem); line-height: 0.9; color: var(--gold); }
 
-        /* Charcoal → gold on hover button */
+        /* Charcoal → gold on hover button — add a subtle olive shadow on hover */
         .of-light-btn {
           display: inline-flex; align-items: center; gap: 12px;
           background: var(--charcoal); color: var(--cream);
@@ -373,7 +382,7 @@ export default function OffersSection(): JSX.Element {
           padding: 15px 28px; flex-shrink: 0;
           transition: background 0.3s, color 0.3s, box-shadow 0.3s, gap 0.35s, transform 0.25s;
         }
-        .of-light-btn:hover { background: var(--gold); color: var(--charcoal); box-shadow: 0 8px 28px rgba(201,162,39,0.3); gap: 18px; transform: translateY(-1px); }
+        .of-light-btn:hover { background: var(--gold); color: var(--charcoal); box-shadow: 0 8px 28px rgba(201,162,39,0.3), 0 6px 18px rgba(107,122,58,0.06); gap: 18px; transform: translateY(-1px); }
         .of-light-btn svg { transition: transform 0.35s; }
         .of-light-btn:hover svg { transform: translateX(4px); }
 
@@ -395,7 +404,8 @@ export default function OffersSection(): JSX.Element {
           border-bottom: 1px solid rgba(201,162,39,0.22); border-right: 1px solid rgba(201,162,39,0.22);
         }
         .of-banner-left { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
-        .of-banner-label { font-size: 10px; font-weight: 500; letter-spacing: 0.26em; text-transform: uppercase; color: var(--gold); }
+        /* subtle olive for banner label so the banner ties to the green accent */
+        .of-banner-label { font-size: 10px; font-weight: 500; letter-spacing: 0.26em; text-transform: uppercase; color: var(--olive-hi); }
         .of-banner-headline { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 3.5vw, 3.2rem); letter-spacing: 0.04em; color: var(--cream); line-height: 1; }
         .of-banner-right { display: flex; align-items: center; gap: 40px; flex-wrap: wrap; }
         .of-banner-body { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; font-size: 1.05rem; line-height: 1.75; color: rgba(245,241,232,0.58); max-width: 300px; -webkit-font-smoothing: antialiased; }
