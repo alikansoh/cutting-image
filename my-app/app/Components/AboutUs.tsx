@@ -153,34 +153,37 @@ export default function AboutSection(): JSX.Element {
     <>
       <style>{`
         :root {
-          /* Use only the three provided colors */
-          --main-1: #1C1C1C; /* Charcoal Black */
-          --main-2: #F5F1E8; /* Warm Cream */
-          --accent: #C9A227; /* Gold */
+          --olive:      #6B733E;
+          --olive-d:    #3D4223;
+          --olive-dd:   #2A2E18;
+          --cream:      #F5F1E8;
+          --accent:     #C9A227;
 
-          /* derived semi-transparent values */
-          --accent-14: rgba(201,162,39,.14);
-          --accent-35: rgba(201,162,39,.35);
-          --shadow-main: rgba(28,28,28,.14);
-          --main-2-94: rgba(245,241,232,.94);
+          --olive-85:   rgba(107,115,62,.85);
+          --olive-70:   rgba(107,115,62,.70);
+          --olive-14:   rgba(107,115,62,.14);
+          --olive-07:   rgba(107,115,62,.07);
+          --accent-14:  rgba(201,162,39,.14);
+          --accent-35:  rgba(201,162,39,.35);
+          --shadow-ol:  rgba(107,115,62,.14);
+          --cream-94:   rgba(245,241,232,.94);
         }
 
         .ci-about *,.ci-about *::before,.ci-about *::after { box-sizing:border-box; margin:0; padding:0; }
 
         /* ── Warm cream base ── */
         .ci-about {
-          background:var(--main-2); color:var(--main-1);
+          background:var(--cream); color:var(--olive);
           font-family:'DM Sans',sans-serif; position:relative; overflow:hidden;
         }
 
-        /* Subtle grain on cream */
         .ci-about::after {
           content:''; position:absolute; inset:0;
           background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
           opacity:.018; pointer-events:none; z-index:50;
         }
 
-        /* Gold side bar — parallaxes */
+        /* Gold side bar */
         .ci-side-bar {
           position:absolute; left:52px; top:-10%; width:2px; height:120%;
           background:linear-gradient(to bottom,transparent 0%,var(--accent) 25%,var(--accent) 75%,transparent 100%);
@@ -190,11 +193,11 @@ export default function AboutSection(): JSX.Element {
         .ci-inner { max-width:1360px; margin:0 auto; padding:0 88px; position:relative; z-index:2; }
         @media (max-width:960px) { .ci-inner { padding:0 28px; } .ci-side-bar { display:none; } }
 
-        /* ── Marquee — cream surface ── */
+        /* ── Marquee ── */
         .ci-marquee {
           overflow:hidden;
           border-top:1px solid var(--accent-14); border-bottom:1px solid var(--accent-14);
-          padding:16px 0; background:var(--main-2);
+          padding:16px 0; background:var(--cream);
         }
         .ci-marquee-track { display:flex; white-space:nowrap; animation:ciMq 24s linear infinite; }
         .ci-marquee-track:hover { animation-play-state:paused; }
@@ -202,28 +205,26 @@ export default function AboutSection(): JSX.Element {
         .ci-marquee-item {
           display:inline-flex; align-items:center; gap:18px; padding:0 28px; flex-shrink:0;
           font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:.14em;
-          color:rgba(28,28,28,.85);
+          color:var(--olive-85);
         }
-        /* Alternating gold dots */
         .ci-mq-dot-cr { width:4px; height:4px; border-radius:50%; background:var(--accent); flex-shrink:0; }
-        .ci-mq-dot-nv { width:4px; height:4px; border-radius:50%; background:var(--main-1); flex-shrink:0; }
+        .ci-mq-dot-nv { width:4px; height:4px; border-radius:50%; background:var(--olive); flex-shrink:0; }
 
         /* ── Stats ── */
         .ci-stats { display:grid; grid-template-columns:repeat(4,1fr); border-bottom:1px solid var(--accent-14); }
         @media (max-width:700px) { .ci-stats { grid-template-columns:repeat(2,1fr); } }
         .ci-stat-item {
           padding:40px 28px; text-align:center; border-right:1px solid var(--accent-14);
-          background:var(--main-2); transition:background .3s;
+          background:var(--cream); transition:background .3s;
         }
         .ci-stat-item:hover { background:rgba(245,241,232,.98); }
         .ci-stat-item:last-child { border-right:none; }
-        /* Charcoal stat numbers — readable on cream */
         .ci-stat-num {
           display:block; font-family:'Bebas Neue',sans-serif;
           font-size:clamp(2.6rem,4vw,3.8rem); line-height:1; margin-bottom:6px;
-          color:var(--main-1);
+          color:var(--olive);
         }
-        .ci-stat-label { font-size:10px; font-weight:500; letter-spacing:.2em; text-transform:uppercase; color:rgba(28,28,28,.7); }
+        .ci-stat-label { font-size:10px; font-weight:500; letter-spacing:.2em; text-transform:uppercase; color:var(--olive-70); }
 
         /* ── Split ── */
         .ci-split { display:grid; grid-template-columns:1fr 1fr; gap:100px; align-items:center; padding:120px 0; }
@@ -231,18 +232,15 @@ export default function AboutSection(): JSX.Element {
 
         .ci-eyebrow { display:flex; align-items:center; gap:14px; margin-bottom:30px; }
         .ci-eyebrow-label { font-size:10.5px; font-weight:500; letter-spacing:.24em; text-transform:uppercase; color:var(--accent); font-family:'DM Sans',sans-serif; }
-        /* Gold draw line */
         .ci-line-draw { width:72px; height:1px; background:var(--accent); transform:scaleX(0); transform-origin:left center; }
 
         .ci-heading-wrap { margin-bottom:36px; }
-        /* Charcoal heading — strong contrast on cream */
         .ci-heading-line {
           display:block; overflow:hidden;
           font-family:'Bebas Neue',sans-serif;
           font-size:clamp(3.8rem,9vw,8.5rem); line-height:.92; letter-spacing:.025em;
-          color:var(--main-1);
+          color:var(--olive);
         }
-        /* Gold accent word */
         .ci-heading-accent {
           display:block; overflow:hidden;
           font-family:'Bebas Neue',sans-serif;
@@ -250,15 +248,13 @@ export default function AboutSection(): JSX.Element {
           color:var(--accent);
         }
 
-        /* Body text — charcoal */
         .ci-body-text {
           font-family:'Cormorant Garamond',serif;
           font-size:clamp(1.1rem,1.5vw,1.3rem); font-weight:600; line-height:1.8;
-          color:var(--main-1); max-width:500px; margin-bottom:24px; font-style:italic;
+          color:var(--olive); max-width:500px; margin-bottom:24px; font-style:italic;
           -webkit-font-smoothing:antialiased;
         }
 
-        /* CTA link — gold */
         .ci-cta {
           display:inline-flex; align-items:center; gap:12px;
           font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500;
@@ -277,28 +273,26 @@ export default function AboutSection(): JSX.Element {
         .ci-img-main { position:absolute; inset:0 0 70px 70px; overflow:hidden; }
         .ci-img-accent {
           position:absolute; bottom:0; left:0; width:52%; height:46%;
-          overflow:hidden; border:4px solid var(--main-2); z-index:2;
-          box-shadow:0 8px 40px var(--shadow-main);
+          overflow:hidden; border:4px solid var(--cream); z-index:2;
+          box-shadow:0 8px 40px var(--shadow-ol);
         }
-        /* Gold wipe reveal */
         .ci-img-cover { position:absolute; inset:0; background:var(--accent); z-index:3; transform-origin:right center; }
         .ci-img-main .ci-img-el,.ci-img-accent .ci-img-el { object-fit:cover; display:block; z-index:1; }
 
-        /* Image label — cream bg, gold accent */
         .ci-img-label {
           position:absolute; bottom:16px; left:16px;
-          background:var(--main-2-94); border-left:2px solid var(--accent);
+          background:var(--cream-94); border-left:2px solid var(--accent);
           padding:9px 14px; font-family:'DM Sans',sans-serif; font-size:10px;
           letter-spacing:.16em; text-transform:uppercase; color:var(--accent);
           z-index:4; backdrop-filter:blur(8px);
         }
 
-        /* Badge — charcoal fill with cream text + gold year (kept legible) */
+        /* Badge — olive fill with cream text + gold year */
         .ci-badge {
           position:absolute; top:-10px; right:-10px;
-          width:96px; height:96px; background:var(--main-1);
+          width:96px; height:96px; background:var(--olive);
           display:flex; flex-direction:column; align-items:center; justify-content:center;
-          z-index:5; box-shadow:0 4px 24px var(--shadow-main);
+          z-index:5; box-shadow:0 4px 24px var(--shadow-ol);
         }
         .ci-badge-since {
           font-family:'DM Sans',sans-serif; font-size:8.5px; letter-spacing:.22em;
@@ -306,45 +300,41 @@ export default function AboutSection(): JSX.Element {
         }
         .ci-badge-year { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; color:var(--accent); line-height:1; }
 
-        /* ── Pillars — cream surface ── */
+        /* ── Pillars ── */
         .ci-pillars { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--accent-14); }
         @media (max-width:760px) { .ci-pillars { grid-template-columns:1fr; } }
         .ci-pillar {
-          background:var(--main-2); padding:52px 40px;
+          background:var(--cream); padding:52px 40px;
           position:relative; overflow:hidden; transition:background .45s;
         }
-        /* Gold bottom reveal bar */
         .ci-pillar::after {
           content:''; position:absolute; bottom:0; left:0; right:0;
           height:3px;
-          background:linear-gradient(to right,var(--accent),var(--main-1));
+          background:linear-gradient(to right,var(--accent),var(--olive));
           transform:scaleX(0); transform-origin:left; transition:transform .55s;
         }
         .ci-pillar:hover { background:rgba(245,241,232,.98); }
         .ci-pillar:hover::after { transform:scaleX(1); }
 
-        /* Large ghost number — charcoal tint */
         .ci-pillar-bg-num {
           font-family:'Bebas Neue',sans-serif; font-size:5rem;
-          color:rgba(28,28,28,.07); line-height:1;
+          color:var(--olive-07); line-height:1;
           position:absolute; top:20px; right:24px;
           transition:color .45s; pointer-events:none; user-select:none;
         }
-        .ci-pillar:hover .ci-pillar-bg-num { color:rgba(28,28,28,.14); }
+        .ci-pillar:hover .ci-pillar-bg-num { color:var(--olive-14); }
 
-        /* Pillar title — charcoal */
         .ci-pillar-title {
           font-family:'Bebas Neue',sans-serif; font-size:2.1rem;
-          letter-spacing:.07em; color:var(--main-1); margin-bottom:18px;
+          letter-spacing:.07em; color:var(--olive); margin-bottom:18px;
         }
         .ci-pillar-title::before {
           content:''; display:block; width:24px; height:1px;
           background:var(--accent); margin-bottom:16px;
         }
-        /* Body — charcoal */
         .ci-pillar-body {
           font-family:'Cormorant Garamond',serif; font-size:1.08rem;
-          line-height:1.85; color:var(--main-1); font-weight:600;
+          line-height:1.85; color:var(--olive); font-weight:600;
         }
 
         .ci-bottom-rule { height:1px; background:var(--accent-14); position:relative; z-index:2; }

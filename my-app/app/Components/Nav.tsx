@@ -42,19 +42,21 @@ export default function Nav() {
           --gold-b:     #E0B83A;
           --gold-dim:   rgba(201,162,39,0.13);
           --border:     rgba(201,162,39,0.18);
+          --sage:       #959F5D;
+          --sage-b:     #A8B26E;
         }
 
         .font-bebas { font-family:'Bebas Neue',sans-serif; }
         .font-corm  { font-family:'Cormorant Garamond',serif; }
         .font-dm    { font-family:'DM Sans',sans-serif; }
 
-        /* Logo — charcoal-to-gold shimmer */
+        /* Logo — charcoal-to-gold shimmer (unchanged) */
         .brand-shimmer {
           background: linear-gradient(130deg, #1C1C1C 0%, #C9A227 40%, #2E2E2E 65%, #1C1C1C 100%);
           -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
         }
 
-        /* Gold top rule on scroll */
+        /* Gold top rule on scroll (unchanged) */
         .nav-wrap::before {
           content:''; position:absolute; top:0; left:0; right:0; height:2px;
           background:linear-gradient(90deg,transparent 0%,#C9A227 15%,#E0B83A 50%,#C9A227 85%,transparent 100%);
@@ -62,7 +64,7 @@ export default function Nav() {
         }
         .nav-wrap.scrolled::before { opacity:1; }
 
-        /* Book button — charcoal fill, cream text */
+        /* Book button — charcoal fill, gold hover (unchanged) */
         .book-btn {
           clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
           background:var(--charcoal); color:var(--cream);
@@ -75,7 +77,7 @@ export default function Nav() {
           box-shadow:0 8px 28px rgba(201,162,39,.35);
         }
 
-        /* Desktop nav links — charcoal-light, gold hover */
+        /* Desktop nav links — gold hover (unchanged) */
         .nav-lnk {
           position:relative; color:var(--charcoal-lt);
           transition:color .3s;
@@ -88,7 +90,7 @@ export default function Nav() {
         .nav-lnk:hover { color:var(--gold); }
         .nav-lnk:hover::after { width:100%; }
 
-        /* Hamburger — dark lines on cream bg */
+        /* Hamburger */
         .hline {
           display:block; width:24px; height:1.5px;
           background:rgba(28,28,28,.65);
@@ -97,11 +99,11 @@ export default function Nav() {
         }
         .hline-mid { width:16px; }
         button:hover .hline-mid { width:24px; }
-        .open-1 { transform:translateY(6.5px) rotate(45deg);  background:var(--gold-b); width:24px; }
+        .open-1 { transform:translateY(6.5px) rotate(45deg);  background:var(--sage-b); width:24px; }
         .open-2 { opacity:0; transform:scaleX(0); }
-        .open-3 { transform:translateY(-6.5px) rotate(-45deg); background:var(--gold-b); }
+        .open-3 { transform:translateY(-6.5px) rotate(-45deg); background:var(--sage-b); }
 
-        /* Drawer — cream bg */
+        /* Drawer */
         .drawer {
           position:fixed; inset:0; width:100%; height:100dvh;
           background:var(--cream);
@@ -113,17 +115,17 @@ export default function Nav() {
         }
         .drawer.is-open { transform:translateX(0); }
 
-        /* Charcoal left stripe */
+        /* Sage left stripe */
         .d-stripe {
           position:absolute; left:0; top:0; bottom:0; width:3px;
-          background:linear-gradient(to bottom,transparent,#1C1C1C 25%,#2E2E2E 50%,#1C1C1C 85%,transparent);
+          background:linear-gradient(to bottom,transparent,#959F5D 25%,#A8B26E 50%,#959F5D 85%,transparent);
           opacity:.7;
         }
 
-        /* Corner accent brackets */
+        /* Corner accents */
         .d-corner { position:absolute; width:20px; height:20px; opacity:.18; }
         .d-tr { top:82px; right:24px; border-top:1px solid var(--charcoal); border-right:1px solid var(--charcoal); }
-        .d-bl { bottom:82px; left:24px; border-bottom:1px solid var(--gold); border-left:1px solid var(--gold); }
+        .d-bl { bottom:82px; left:24px; border-bottom:1px solid var(--sage); border-left:1px solid var(--sage); }
 
         /* Animated link rows */
         .m-row {
@@ -136,26 +138,27 @@ export default function Nav() {
         .is-open .m-row:nth-child(3) { transition-delay:.24s; }
         .is-open .m-row:nth-child(4) { transition-delay:.30s; }
 
-        /* Mobile nav links — charcoal on cream */
+        /* Mobile nav links */
         .m-link {
           font-family:'Bebas Neue',sans-serif;
           font-size:clamp(2.8rem,10vw,4rem); letter-spacing:.04em;
           color:rgba(28,28,28,.7); text-decoration:none;
           display:flex; align-items:center; gap:1rem;
-          padding:14px 0; border-bottom:1px solid rgba(201,162,39,.12);
+          padding:14px 0; border-bottom:1px solid rgba(149,159,93,.12);
           transition:color .25s,gap .35s cubic-bezier(.16,1,.3,1);
           -webkit-tap-highlight-color:transparent; min-height:64px;
         }
-        .m-link:hover,.m-link:focus-visible { color:var(--gold); gap:1.5rem; outline:none; }
+        .m-link:hover,.m-link:focus-visible { color:var(--sage); gap:1.5rem; outline:none; }
 
         .m-num {
           font-family:'DM Sans',sans-serif; font-size:.62rem; font-weight:500;
-          letter-spacing:.2em; color:var(--gold); opacity:.45;
+          letter-spacing:.2em; color:var(--sage); opacity:.45;
           align-self:flex-end; padding-bottom:.5em; transition:opacity .25s;
         }
         .m-link:hover .m-num { opacity:1; }
+
         .m-arr {
-          margin-left:auto; color:var(--gold-b); opacity:0; transform:translateX(-8px);
+          margin-left:auto; color:var(--sage-b); opacity:0; transform:translateX(-8px);
           transition:opacity .25s,transform .35s cubic-bezier(.16,1,.3,1);
         }
         .m-link:hover .m-arr { opacity:.7; transform:translateX(0); }
@@ -166,21 +169,21 @@ export default function Nav() {
         .m-footer { opacity:0; transform:translateY(12px); transition:opacity .5s .45s cubic-bezier(.16,1,.3,1),transform .5s .45s cubic-bezier(.16,1,.3,1); }
         .is-open .m-footer { opacity:1; transform:translateY(0); }
 
-        /* Gold diamond */
-        .diamond { display:inline-block; width:5px; height:5px; background:var(--gold); transform:rotate(45deg); opacity:.5; flex-shrink:0; }
+        /* Diamond — sage */
+        .diamond { display:inline-block; width:5px; height:5px; background:var(--sage); transform:rotate(45deg); opacity:.5; flex-shrink:0; }
 
         /* Vertical divider */
-        .vdiv { width:1px; height:26px; background:linear-gradient(to bottom,transparent,rgba(201,162,39,.35),transparent); }
+        .vdiv { width:1px; height:26px; background:linear-gradient(to bottom,transparent,rgba(149,159,93,.35),transparent); }
 
-        /* Phone link */
+        /* Phone link — sage hover */
         .phone-lnk { color:var(--charcoal-lt); transition:color .3s; }
-        .phone-lnk:hover { color:var(--gold); }
+        .phone-lnk:hover { color:var(--sage); }
 
         /* Mobile book btn text fix on hover */
         .book-btn:hover svg path { stroke:var(--charcoal); }
       `}</style>
 
-      {/* Overlay — cream-tinted */}
+      {/* Overlay */}
       <div aria-hidden onClick={() => setOpen(false)}
         style={{ backgroundColor: 'rgba(237,231,214,.82)' }}
         className={`fixed inset-0 z-[190] backdrop-blur-sm transition-opacity duration-500
@@ -199,18 +202,18 @@ export default function Nav() {
             <span className="brand-shimmer font-bebas text-[1.4rem] tracking-widest">Cutting Image</span>
           </Link>
           <button onClick={() => setOpen(false)} aria-label="Close menu"
-            style={{ borderColor: 'rgba(201,162,39,.25)', color: 'rgba(28,28,28,.45)' }}
+            style={{ borderColor: 'rgba(149,159,93,.3)', color: 'rgba(28,28,28,.45)' }}
             className="w-11 h-11 flex items-center justify-center rounded-full border
-              hover:border-[#C9A227] hover:text-[#C9A227] transition-all duration-300 active:scale-95">
+              hover:border-[#959F5D] hover:text-[#959F5D] transition-all duration-300 active:scale-95">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
               <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
         </div>
 
-        {/* Divider line — gold */}
+        {/* Divider — sage */}
         <div className="relative z-10 mx-6 mt-4 mb-6 h-px"
-             style={{ background: 'linear-gradient(to right,rgba(201,162,39,.55),rgba(201,162,39,.18),transparent)' }}
+             style={{ background: 'linear-gradient(to right,rgba(149,159,93,.55),rgba(149,159,93,.18),transparent)' }}
              aria-hidden />
 
         <nav className="relative z-10 flex flex-col px-6 flex-1">
@@ -227,7 +230,7 @@ export default function Nav() {
           ))}
 
           <div className="m-cta mt-8">
-            {/* Book — charcoal fill */}
+            {/* Book — charcoal fill, gold hover (unchanged) */}
             <Link href="/booking" onClick={() => setOpen(false)}
               className="book-btn w-full flex items-center justify-center gap-3
                 font-dm text-[.78rem] font-semibold tracking-[.2em] uppercase px-8 py-5
@@ -237,12 +240,12 @@ export default function Nav() {
                 <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </Link>
-            {/* Phone — outlined gold */}
+            {/* Phone — sage outlined */}
             <a href="tel:+10000000000"
               className="mt-3 w-full flex items-center justify-center gap-2.5
                 font-dm text-[.72rem] tracking-[.15em] py-4 border
                 transition-all duration-300 active:scale-[.98]"
-              style={{ borderColor: 'rgba(201,162,39,.28)', color: 'rgba(201,162,39,.7)' }}>
+              style={{ borderColor: 'rgba(149,159,93,.28)', color: 'rgba(149,159,93,.7)' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.27 11.36 11.36 0 003.56.57 1 1 0 011 1V20a1 1 0 01-1 1C9.61 21 3 14.39 3 6a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.27 1.1l-2.18 2.12z"
                   stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -255,7 +258,7 @@ export default function Nav() {
         <div className="m-footer relative z-10 mt-auto px-6 pb-8 pt-6">
           <div className="flex items-center gap-3 mb-3" aria-hidden>
             <span className="diamond" />
-            <span className="block h-px flex-1" style={{ background: 'linear-gradient(to right,rgba(201,162,39,.35),transparent)' }} />
+            <span className="block h-px flex-1" style={{ background: 'linear-gradient(to right,rgba(149,159,93,.35),transparent)' }} />
             <span className="diamond" style={{ opacity:.18 }} />
           </div>
           <div className="flex items-center justify-between">
@@ -265,7 +268,7 @@ export default function Nav() {
               {['instagram','facebook'].map(name => (
                 <a key={name} href="#" aria-label={name}
                    style={{ color: 'rgba(28,28,28,.28)' }}
-                   className="hover:text-[#C9A227] transition-colors duration-300">
+                   className="hover:text-[#959F5D] transition-colors duration-300">
                   {name === 'instagram' ? (
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                       <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="1.5"/>
@@ -285,7 +288,7 @@ export default function Nav() {
         </div>
       </div>
 
-      {/* Main Header — cream bg */}
+      {/* Main Header */}
       <header className={`nav-wrap fixed top-0 inset-x-0 z-[100] transition-all duration-500 ${scrolled ? 'scrolled' : ''}`}
         style={{
           backgroundColor: scrolled ? 'rgba(245,241,232,.97)' : 'rgba(245,241,232,.92)',
@@ -328,7 +331,7 @@ export default function Nav() {
 
           <button className="md:hidden flex flex-col gap-[5px] p-2.5 -mr-1 z-[210] rounded-sm
               focus-visible:outline focus-visible:outline-2"
-            style={{ outlineColor: 'rgba(201,162,39,.5)' }}
+            style={{ outlineColor: 'rgba(149,159,93,.5)' }}
             onClick={() => setOpen(s => !s)} aria-expanded={open}
             aria-label={open ? 'Close menu' : 'Open menu'}>
             <span className={`hline ${open ? 'open-1' : ''}`} />

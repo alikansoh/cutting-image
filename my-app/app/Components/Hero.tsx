@@ -56,12 +56,20 @@ export default function Hero(): JSX.Element {
     <>
       <style>{`
         :root {
-          --gold:      #C9A227;
-          --gold-b:    #E0B83A;
-          --gold-dim:  #A07E15;
-          --cream:     #F5F1E8;
-          --charcoal:  #1C1C1C;
-          --ink:       #0A0908;
+          /* ── Olive Green — sampled directly from the chair upholstery ── */
+          --olive:      #6B7A3A;
+          --olive-hi:   #8A9E4A;
+          --olive-lo:   #47531F;
+          --olive-soft: rgba(107,122,58,0.18);
+
+          /* ── Warm Gold — matched to balloon/trim accents in the shop ── */
+          --gold:       #C8A42A;
+          --gold-hi:    #E2BF50;
+          --gold-lo:    #8F7118;
+
+          /* ── Neutrals ── */
+          --charcoal:   #171510;
+          --ink:        rgba(12,11,8,0.76);
         }
 
         .font-bebas { font-family: 'Bebas Neue', sans-serif; }
@@ -75,17 +83,30 @@ export default function Hero(): JSX.Element {
           opacity: 0.04; pointer-events: none; z-index: 5;
         }
 
-        /* Gold gradient accent */
+        /* "Style" — warm brass gold */
         .gold-static {
-          background: linear-gradient(110deg, #A07E15 0%, #C9A227 28%, #E0B83A 50%, #C9A227 72%, #A07E15 100%);
+          background: linear-gradient(112deg,
+            var(--gold-lo)  0%,
+            var(--gold)    42%,
+            var(--gold-hi) 100%);
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
         }
 
-        /* ── CSS-only entrance animations ── */
+        /* "Precision" — chair olive */
+        .olive-static {
+          background: linear-gradient(112deg,
+            var(--olive-lo) 0%,
+            var(--olive)   44%,
+            var(--olive-hi) 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
         @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(24px); }
+          from { opacity: 0; transform: translateY(22px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes fadeIn {
@@ -105,66 +126,79 @@ export default function Hero(): JSX.Element {
           to   { opacity: 1; transform: scale(1) rotate(0deg); }
         }
 
-        .anim-video   { animation: fadeIn   1.2s ease-out both; }
-        .anim-overlay { animation: fadeIn   1.0s ease-out 0.2s both; }
-        .anim-line-l  { animation: scaleInLeft  0.9s cubic-bezier(0.16,1,0.3,1) 0.4s both; }
-        .anim-line-r  { animation: scaleInRight 0.9s cubic-bezier(0.16,1,0.3,1) 0.4s both; }
-        .anim-tag     { animation: fadeUp   0.8s ease-out 0.5s both; }
-        .anim-h1      { animation: fadeUp   0.9s ease-out 0.65s both; }
-        .anim-sub     { animation: fadeUp   0.8s ease-out 0.8s both; }
-        .anim-cta-1   { animation: fadeUp   0.7s ease-out 0.9s both; }
-        .anim-cta-2   { animation: fadeUp   0.7s ease-out 1.0s both; }
-        .anim-stats   { animation: fadeUp   0.7s ease-out 1.1s both; }
-        .anim-badge   { animation: popIn    0.8s cubic-bezier(0.34,1.56,0.64,1) 1.2s both; }
-        .anim-scroll  { animation: fadeUp   0.6s ease-out 1.3s both; }
+        .anim-video   { animation: fadeIn        1.2s ease-out both; }
+        .anim-overlay { animation: fadeIn        1.0s ease-out 0.2s both; }
+        .anim-line-l  { animation: scaleInLeft   0.9s cubic-bezier(0.16,1,0.3,1) 0.4s both; }
+        .anim-line-r  { animation: scaleInRight  0.9s cubic-bezier(0.16,1,0.3,1) 0.4s both; }
+        .anim-tag     { animation: fadeUp        0.8s ease-out 0.5s both; }
+        .anim-h1      { animation: fadeUp        0.9s ease-out 0.65s both; }
+        .anim-sub     { animation: fadeUp        0.8s ease-out 0.8s both; }
+        .anim-cta-1   { animation: fadeUp        0.7s ease-out 0.9s both; }
+        .anim-cta-2   { animation: fadeUp        0.7s ease-out 1.0s both; }
+        .anim-stats   { animation: fadeUp        0.7s ease-out 1.1s both; }
+        .anim-badge   { animation: popIn         0.8s cubic-bezier(0.34,1.56,0.64,1) 1.2s both; }
+        .anim-scroll  { animation: fadeUp        0.6s ease-out 1.3s both; }
 
         @media (prefers-reduced-motion: reduce) {
           .anim-video, .anim-overlay, .anim-line-l, .anim-line-r,
           .anim-tag, .anim-h1, .anim-sub, .anim-cta-1, .anim-cta-2,
-          .anim-stats, .anim-badge, .anim-scroll {
-            animation: none;
-          }
+          .anim-stats, .anim-badge, .anim-scroll { animation: none; }
         }
 
-        /* Primary CTA — charcoal fill, gold hover */
+        /* Primary CTA — dark with gold border, fills gold on hover */
         .btn-primary {
           clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
-          transition: background 0.3s, transform 0.25s, box-shadow 0.3s, color 0.3s;
+          background: rgba(14,13,9,0.82);
+          border: 1px solid rgba(200,164,42,0.45);
+          transition: background 0.3s, border-color 0.3s, transform 0.25s, box-shadow 0.3s, color 0.3s;
         }
         .btn-primary:hover {
           background: var(--gold) !important;
+          border-color: var(--gold-hi) !important;
           color: var(--charcoal) !important;
           transform: translateY(-2px);
-          box-shadow: 0 10px 40px rgba(201,162,39,0.45);
+          box-shadow: 0 12px 36px rgba(200,164,42,0.30);
         }
-        .btn-primary:hover svg path { stroke: var(--charcoal); }
+        .btn-primary:hover .btn-arrow { stroke: var(--charcoal); }
 
-        /* Secondary CTA — gold border */
+        /* Secondary CTA — olive border, olive fill on hover */
         .btn-secondary {
           clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
-          border: 1px solid rgba(201,162,39,0.45);
-          transition: border-color 0.3s, background 0.3s, transform 0.25s;
+          border: 1px solid rgba(107,122,58,0.50);
+          background: transparent;
+          transition: border-color 0.3s, background 0.3s, transform 0.25s, color 0.3s;
         }
         .btn-secondary:hover {
-          border-color: var(--gold);
-          background: rgba(201,162,39,0.1);
+          border-color: var(--olive-hi);
+          background: rgba(107,122,58,0.15);
+          color: var(--olive-hi);
           transform: translateY(-2px);
         }
 
+        /* Badge ring text */
         .badge-text {
           font-family: 'DM Sans', sans-serif;
-          font-size: 6.2px; fill: var(--gold-b);
-          letter-spacing: 3.4px; text-transform: uppercase;
+          font-size: 6.2px;
+          fill: var(--olive-hi);
+          letter-spacing: 3.4px;
+          text-transform: uppercase;
         }
 
-        /* Stat numbers — gold gradient */
+        /* Stat numbers — gold */
         .stat-num {
           font-family: 'Bebas Neue', sans-serif;
-          font-size: 2.1rem; line-height: 1;
-          background: linear-gradient(120deg, #C9A227, #E0B83A);
+          font-size: 2.1rem;
+          line-height: 1;
+          background: linear-gradient(120deg, var(--gold-lo), var(--gold-hi));
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
+        }
+
+        /* Stat labels — muted olive */
+        .stat-label {
+          font-family: 'DM Sans', sans-serif;
+          color: rgba(107,122,58,0.60);
         }
 
         h1 { perspective: 900px; }
@@ -176,6 +210,7 @@ export default function Hero(): JSX.Element {
 
       <section className="relative w-full h-screen min-h-[640px] overflow-hidden grain">
 
+        {/* Background video */}
         <video
           className="absolute inset-0 w-full h-full object-cover z-0 anim-video"
           src="/hero.mp4"
@@ -190,27 +225,32 @@ export default function Hero(): JSX.Element {
           fetchPriority="high"
         />
 
-        {/* Overlays — subtle gold tint at bottom-left */}
+        {/* ── Overlays ── */}
         <div className="absolute inset-0 z-10 pointer-events-none anim-overlay">
-          <div className="absolute inset-0 bg-[rgba(5,4,3,0.72)]" />
-          <div className="absolute inset-0 bg-linear-to-r from-[rgba(5,4,3,0.88)] via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-linear-to-t from-[rgba(5,4,3,0.92)] via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 w-150 h-100 bg-[radial-gradient(ellipse_at_bottom_left,rgba(201,162,39,0.10)_0%,transparent_70%)]" />
+          {/* Base dark veil — warm-tinted to match the shop's dark wood/black aesthetic */}
+          <div className="absolute inset-0 bg-[rgba(10,9,6,0.74)]" />
+          {/* Directional left & bottom bleed */}
+          <div className="absolute inset-0 bg-linear-to-r from-[rgba(10,9,6,0.92)] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-[rgba(10,9,6,0.96)] via-transparent to-transparent" />
+          {/* Gold warmth — bottom-left (reflects the gold balloon accent) */}
+          <div className="absolute bottom-0 left-0 w-[600px] h-[420px] bg-[radial-gradient(ellipse_at_bottom_left,rgba(200,164,42,0.13)_0%,transparent_70%)]" />
+          {/* Olive glow — mid-right (reflects the chair colour) */}
+          <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[480px] h-[480px] bg-[radial-gradient(ellipse_at_right,rgba(107,122,58,0.09)_0%,transparent_70%)]" />
         </div>
 
-        {/* Horizontal gold lines */}
+        {/* ── Horizontal accent lines — gold left, olive right ── */}
         <div className="absolute top-1/2 -translate-y-1/2 inset-x-0 z-20 flex items-center pointer-events-none px-6 md:px-10 gap-6">
-          <span className="block h-px flex-1 bg-linear-to-r from-transparent via-[rgba(201,162,39,0.35)] to-[rgba(201,162,39,0.12)] anim-line-l" />
-          <span className="block h-px flex-1 bg-linear-to-l from-transparent via-[rgba(201,162,39,0.35)] to-[rgba(201,162,39,0.12)] anim-line-r" />
+          <span className="block h-px flex-1 bg-linear-to-r from-transparent via-[rgba(200,164,42,0.32)] to-[rgba(200,164,42,0.08)] anim-line-l" />
+          <span className="block h-px flex-1 bg-linear-to-l from-transparent via-[rgba(107,122,58,0.32)] to-[rgba(107,122,58,0.08)] anim-line-r" />
         </div>
 
-        {/* Main content */}
+        {/* ── Main content ── */}
         <div className="relative z-30 h-full max-w-screen-xl mx-auto px-6 md:px-10 lg:px-16 flex flex-col justify-center">
 
           {/* Eyebrow */}
-          <div className="flex items-center gap-3 md:gap-4 pt-8 md:pt-10 mb-4 md:mb-6">
-            <span className="w-6 md:w-8 h-px bg-[#C9A227]" aria-hidden="true" />
-            <p className="font-dm text-[0.55rem] md:text-[0.6rem] tracking-[0.3em] md:tracking-[0.38em] uppercase text-[#E0B83A] anim-tag">
+          <div className="flex items-center gap-3 md:gap-4 pt-8 md:pt-10 mb-4 md:mb-6 anim-tag">
+            <span className="w-6 md:w-8 h-px bg-[var(--olive-lo)]" aria-hidden="true" />
+            <p className="font-dm text-[0.55rem] md:text-[0.6rem] tracking-[0.32em] md:tracking-[0.40em] uppercase text-[var(--olive-hi)]">
               Cutting Image &nbsp;·&nbsp; Premium Barbershop &nbsp;·&nbsp; Staines
             </p>
           </div>
@@ -224,13 +264,12 @@ export default function Hero(): JSX.Element {
             <em className="gold-static not-italic">Style</em>
             <br />
             Meets{' '}
-            <span className="text-white/90">Precision</span>
+            <span className="olive-static">Precision</span>
           </h1>
 
-          {/* Sub */}
+          {/* Subheading */}
           <p
-            className="italic text-[0.95rem] md:text-[1.05rem] lg:text-[1.12rem] leading-relaxed text-white/55 max-w-[90vw] md:max-w-[400px] lg:max-w-[450px] mb-7 md:mb-10 anim-sub"
-            style={{ fontFamily: 'inherit' }}
+            className="font-dm italic text-[0.95rem] md:text-[1.05rem] lg:text-[1.12rem] leading-relaxed text-white/50 max-w-[90vw] md:max-w-[400px] lg:max-w-[460px] mb-7 md:mb-10 anim-sub"
           >
             Expert cuts, hot towel shaves &amp; beard sculpting — crafted for the
             modern gentleman at 173 High Street, Staines.
@@ -240,11 +279,11 @@ export default function Hero(): JSX.Element {
           <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 md:gap-4">
             <Link
               href="/booking"
-              className="btn-primary inline-flex items-center gap-2.5 font-dm text-[0.65rem] md:text-[0.7rem] font-semibold tracking-[0.22em] uppercase bg-[#1C1C1C] text-white px-6 md:px-8 py-3.5 md:py-4 anim-cta-1"
+              className="btn-primary inline-flex items-center gap-2.5 font-dm text-[0.65rem] md:text-[0.7rem] font-semibold tracking-[0.22em] uppercase text-white px-6 md:px-8 py-3.5 md:py-4 anim-cta-1"
             >
               Book Appointment
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path className="btn-arrow" d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </Link>
 
@@ -260,21 +299,26 @@ export default function Hero(): JSX.Element {
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-5 md:gap-8 mt-8 md:mt-14 pt-6 md:pt-8 border-t border-white/[0.07] anim-stats">
+          <div className="flex items-center gap-5 md:gap-8 mt-8 md:mt-14 pt-6 md:pt-8 border-t border-[rgba(107,122,58,0.18)] anim-stats">
             {[
               { num: '10K+', label: 'Clients Served'  },
               { num: '35+',  label: 'Years Experience' },
               { num: '4.9★', label: 'Google Rating'    },
-            ].map(({ num, label }) => (
-              <div key={label} className="flex flex-col gap-1">
-                <span className="stat-num tablet-stat-num">{num}</span>
-                <span className="font-dm text-[0.52rem] md:text-[0.58rem] tracking-[0.18em] uppercase text-white/30">{label}</span>
+            ].map(({ num, label }, i) => (
+              <div key={label} className="flex items-center gap-5 md:gap-8">
+                <div className="flex flex-col gap-1">
+                  <span className="stat-num tablet-stat-num">{num}</span>
+                  <span className="stat-label text-[0.52rem] md:text-[0.58rem] tracking-[0.18em] uppercase">{label}</span>
+                </div>
+                {i < 2 && (
+                  <span className="hidden sm:block w-px h-8 bg-[rgba(107,122,58,0.22)]" aria-hidden="true" />
+                )}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Rotating badge — gold ring text */}
+        {/* ── Rotating badge — olive ring text, gold centre diamond ── */}
         <div
           className="hidden sm:flex absolute bottom-20 md:bottom-24 right-6 md:right-10 lg:right-16 z-30 w-[90px] h-[90px] md:w-[110px] md:h-[110px] items-center justify-center anim-badge"
           aria-hidden="true"
@@ -292,28 +336,40 @@ export default function Hero(): JSX.Element {
               <textPath href="#badgePath">CUTTING IMAGE · STAINES · PREMIUM GROOMING · &nbsp;</textPath>
             </text>
           </svg>
-          {/* Diamond icon — gold fill */}
-          <div className="w-8 h-8 md:w-9 md:h-9 border border-[rgba(201,162,39,0.6)] rotate-45 flex items-center justify-center">
-            <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-[#C9A227]" />
+          {/* Diamond — olive border, gold dot */}
+          <div
+            className="w-8 h-8 md:w-9 md:h-9 rotate-45 flex items-center justify-center"
+            style={{ border: '1px solid rgba(107,122,58,0.55)' }}
+          >
+            <div
+              className="w-2 h-2 md:w-2.5 md:h-2.5"
+              style={{ background: 'var(--gold)' }}
+            />
           </div>
         </div>
 
-        {/* Scroll indicator — gold dot */}
+        {/* ── Scroll indicator — olive dot ── */}
         <div
           className="absolute bottom-8 md:bottom-10 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 anim-scroll"
           aria-hidden="true"
         >
-          <div className="w-px h-10 md:h-12 relative overflow-hidden bg-white/10">
+          <div className="w-px h-10 md:h-12 relative overflow-hidden bg-white/8">
             <span
               ref={scrollDotRef}
-              className="scroll-dot absolute top-0 left-0 right-0 h-5 bg-gradient-to-b from-[#C9A227] to-transparent"
-              style={{ willChange: 'transform' }}
+              className="scroll-dot absolute top-0 left-0 right-0 h-5"
+              style={{
+                background: 'linear-gradient(to bottom, var(--olive-hi), transparent)',
+                willChange: 'transform',
+              }}
             />
           </div>
-          <span className="font-dm text-[0.52rem] tracking-[0.28em] uppercase text-white/25">Scroll</span>
+          <span
+            className="font-dm text-[0.52rem] tracking-[0.28em] uppercase"
+            style={{ color: 'rgba(107,122,58,0.50)' }}
+          >
+            Scroll
+          </span>
         </div>
-
-        {/* NO bottom cut — clean straight edge */}
       </section>
     </>
   )
