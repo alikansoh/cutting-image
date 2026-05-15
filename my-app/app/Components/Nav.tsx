@@ -241,7 +241,7 @@ export default function Nav() {
               </svg>
             </Link>
             {/* Phone — sage outlined */}
-            <a href="tel:+10000000000"
+            <a href="tel:01784449005"
               className="mt-3 w-full flex items-center justify-center gap-2.5
                 font-dm text-[.72rem] tracking-[.15em] py-4 border
                 transition-all duration-300 active:scale-[.98]"
@@ -250,7 +250,7 @@ export default function Nav() {
                 <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.27 11.36 11.36 0 003.56.57 1 1 0 011 1V20a1 1 0 01-1 1C9.61 21 3 14.39 3 6a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.27 1.1l-2.18 2.12z"
                   stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              (000) 000-0000
+              01784449005
             </a>
           </div>
         </nav>
@@ -310,14 +310,13 @@ export default function Nav() {
               </Link>
             ))}
             <span className="vdiv" aria-hidden />
-            <a href="tel:+10000000000"
+            <a href="tel:01784449005"
                className="phone-lnk hidden lg:flex items-center gap-2 font-dm text-[.65rem] tracking-[.12em]">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.27 11.36 11.36 0 003.56.57 1 1 0 011 1V20a1 1 0 01-1 1C9.61 21 3 14.39 3 6a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.27 1.1l-2.18 2.12z"
                   stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              (000) 000-0000
-            </a>
+              01784449005            </a>
             <Link href="/booking"
               className="book-btn group inline-flex items-center gap-2.5
                 font-dm text-[.68rem] font-semibold tracking-[.2em] uppercase px-7 py-[11px]">

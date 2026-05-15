@@ -71,7 +71,6 @@ const REVIEWS: Review[] = [
 ];
 
 const GOOGLE_RATING = 4.9;
-const TOTAL_REVIEWS = 312;
 
 function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
   return (
@@ -593,7 +592,6 @@ export default function ReviewsSection(): JSX.Element {
                 <span className="rv-score-num">{GOOGLE_RATING}</span>
                 <div className="rv-score-detail">
                   <Stars rating={GOOGLE_RATING} size={18} />
-                  <span className="rv-score-label">{TOTAL_REVIEWS} reviews</span>
                   <span className="rv-google-badge">
                     <span className="rv-google-g">
                       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -690,7 +688,7 @@ export default function ReviewsSection(): JSX.Element {
                 </svg>
               </a>
               <a
-                href="https://g.co/kgs/example"
+                href="https://www.google.com/maps/place/Cutting+Image/data=!4m2!3m1!1s0x0:0x78edc50a61e9f190?sa=X&ved=1t:2428&ictx=111&cshid=1778843584263201"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rv-btn-ghost"

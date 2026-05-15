@@ -342,7 +342,7 @@ function buildBankEmail(name: string, service: Service, date: string, time: stri
 // ─── STEP TYPES ───────────────────────────────────────────────────────────────
 
 type Step = "service" | "datetime" | "details" | "payment" | "done";
-type Payment = "cash" | "bank";
+type Payment = "bank";
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -388,24 +388,48 @@ export default function BookingPage(): JSX.Element {
   const canGoDatetime = !!service;
   const canGoDetails  = !!service && !!date && !!slot;
   const canGoPayment  = !!name.trim() && !!email.trim() && email.includes("@");
-  const canSubmit     = !!payment;
+  const canSubmit     = true;
 
   const filteredServices = SERVICES.filter((s) => s.category === category);
 
+  const scrollTop = () => {
+    setTimeout(() => {
+      const target = document.getElementById("bk-stepper");
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 0);
+  };
+
   const handleConfirm = useCallback(async () => {
-    if (!service || !date || !slot || !payment) return;
+    if (!service || !date || !slot) return;
     setLoading(true);
     const dateStr = formatDate(date);
-    const html = payment === "cash"
-      ? buildCashEmail(name, service, dateStr, slot)
-      : buildBankEmail(name, service, dateStr, slot);
-    const subject = payment === "cash"
-      ? `✅ Booking Confirmed — ${service.name} on ${dateStr}`
-      : `📋 Complete Your Booking — Bank Transfer Required`;
+    const html = buildBankEmail(name, service, dateStr, slot);
+    const subject = `📋 Complete Your Booking — Bank Transfer Required`;
     await sendEmail(email, name, subject, html);
     setLoading(false);
     setStep("done");
-  }, [service, date, slot, payment, name, email]);
+    scrollTop();
+  }, [service, date, slot, name, email]);
+
+  // ── RESET + SCROLL TO TOP ─────────────────────────────────────────────────
+  const handleBookAnother = useCallback(() => {
+    setStep("service");
+    setService(null);
+    setDate(null);
+    setSlot("");
+    setName("");
+    setEmail("");
+    setPhone("");
+    setPayment(null);
+    // Instant jump to top — works regardless of layout/framework
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 0);
+  }, []);
 
   const stepNum: Record<Step, number> = { service: 1, datetime: 2, details: 3, payment: 4, done: 5 };
 
@@ -896,13 +920,13 @@ export default function BookingPage(): JSX.Element {
 
           {/* ── STEPPER ── */}
           {step !== "done" && (
-            <div className="bk-stepper">
+            <div className="bk-stepper" id="bk-stepper">
               {(["service","datetime","details","payment"] as Step[]).map((s, i, arr) => {
                 const current = stepNum[step];
                 const sn = i + 1;
                 const state = sn < current ? "done" : sn === current ? "active" : "pending";
                 const labels: Record<string, string> = {
-                  service: "Service", datetime: "Date & Time", details: "Your Details", payment: "Payment"
+                  service: "Service", datetime: "Date & Time", details: "Your Details", payment: "Confirm"
                 };
                 return (
                   <div key={s} className="bk-step-item">
@@ -965,11 +989,34 @@ export default function BookingPage(): JSX.Element {
                   ))}
                 </div>
 
+                {/* ── NEW CUSTOMER OFFERS ── */}
+                <div style={{ marginTop: 48, marginBottom: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "var(--olive-hi)" }}>New Customer Offers</span>
+                    <span style={{ flex: 1, height: 1, background: "linear-gradient(90deg, var(--olive-hi), var(--gold), transparent)" }} />
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 2 }}>
+                    {[
+                      { price: "Free",  tag: "First Visit Only", title: "Spend £30, Get a Free Product",        desc: "Spend £30 on any service and choose any product from our premium shelf — on us." },
+                      { price: "£25",   tag: "First Visit Only", title: "Dad & Son Cuts",                       desc: "Father and son both get a premium haircut together on their very first visit." },
+                      { price: "20% Off", tag: "First Visit Only", title: "Colour, Perms & Highlights",         desc: "New customers get 20% off any colour service, perm, or highlight treatment." },
+                    ].map((o) => (
+                      <div key={o.title} style={{ background: "var(--charcoal)", padding: "28px 24px", position: "relative", overflow: "hidden" }}>
+                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, var(--gold-dim, #6B4F16), var(--gold), var(--gold-light, #F0D878), var(--gold), var(--gold-dim, #6B4F16))" }} />
+                        <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--gold)", display: "block", marginBottom: 12 }}>{o.tag}</span>
+                        <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "2.4rem", lineHeight: 0.9, letterSpacing: "0.04em", background: "linear-gradient(118deg, #6B4F16 0%, var(--gold) 50%, #F0D878 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 12 }}>{o.price}</div>
+                        <strong style={{ fontSize: 13, fontWeight: 700, color: "var(--cream)", display: "block", marginBottom: 8, letterSpacing: "0.02em" }}>{o.title}</strong>
+                        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "rgba(245,241,232,0.55)", lineHeight: 1.7, margin: 0 }}>{o.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="bk-btn-row">
                   <button
                     className="bk-btn-primary"
                     disabled={!canGoDatetime}
-                    onClick={() => setStep("datetime")}
+                    onClick={() => { setStep("datetime"); scrollTop(); }}
                   >
                     <span>Choose Date & Time</span>
                     <svg width="18" height="10" viewBox="0 0 18 10" fill="none" aria-hidden="true">
@@ -1028,7 +1075,7 @@ export default function BookingPage(): JSX.Element {
                 )}
 
                 <div className="bk-btn-row">
-                  <button className="bk-btn-back" onClick={() => setStep("service")}>
+                  <button className="bk-btn-back" onClick={() => { setStep("service"); scrollTop(); }}>
                     <svg width="14" height="8" viewBox="0 0 14 8" fill="none" aria-hidden="true">
                       <path d="M13 4H1M7 1L1 4l6 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
@@ -1037,7 +1084,7 @@ export default function BookingPage(): JSX.Element {
                   <button
                     className="bk-btn-primary"
                     disabled={!canGoDetails}
-                    onClick={() => setStep("details")}
+                    onClick={() => { setStep("details"); scrollTop(); }}
                   >
                     <span>Enter Your Details</span>
                     <svg width="18" height="10" viewBox="0 0 18 10" fill="none" aria-hidden="true">
@@ -1079,7 +1126,7 @@ export default function BookingPage(): JSX.Element {
                 </div>
 
                 <div className="bk-btn-row">
-                  <button className="bk-btn-back" onClick={() => setStep("datetime")}>
+                  <button className="bk-btn-back" onClick={() => { setStep("datetime"); scrollTop(); }}>
                     <svg width="14" height="8" viewBox="0 0 14 8" fill="none" aria-hidden="true">
                       <path d="M13 4H1M7 1L1 4l6 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
@@ -1088,7 +1135,7 @@ export default function BookingPage(): JSX.Element {
                   <button
                     className="bk-btn-primary"
                     disabled={!canGoPayment}
-                    onClick={() => setStep("payment")}
+                    onClick={() => { setStep("payment"); scrollTop(); }}
                   >
                     <span>Choose Payment</span>
                     <svg width="18" height="10" viewBox="0 0 18 10" fill="none" aria-hidden="true">
@@ -1099,11 +1146,11 @@ export default function BookingPage(): JSX.Element {
               </div>
             )}
 
-            {/* ── STEP 4: PAYMENT ── */}
+            {/* ── STEP 4: CONFIRM & PAY (bank transfer only) ── */}
             {step === "payment" && service && date && (
               <div>
-                <h2 className="bk-section-title">How Will You <span className="g">Pay?</span></h2>
-                <p className="bk-section-sub">Choose your preferred payment method below.</p>
+                <h2 className="bk-section-title">Confirm Your <span className="g">Booking</span></h2>
+                <p className="bk-section-sub">Review your appointment, then confirm — we&apos;ll email your bank transfer details.</p>
 
                 {/* Summary */}
                 <div className="bk-summary">
@@ -1134,42 +1181,19 @@ export default function BookingPage(): JSX.Element {
                   </div>
                 </div>
 
-                {/* Payment options */}
-                <div className="bk-pay-grid">
-                  <button
-                    className={`bk-pay-card${payment === "cash" ? " selected" : ""}`}
-                    onClick={() => setPayment("cash")}
-                  >
-                    <div className="bk-pay-badge">
-                      {payment === "cash" && (
-                        <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                          <path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                    </div>
-                    <span className="bk-pay-icon">💵</span>
-                    <span className="bk-pay-name">Cash</span>
-                    <p className="bk-pay-desc">Pay in person on the day. Please bring the exact amount if possible.</p>
-                  </button>
-                  <button
-                    className={`bk-pay-card${payment === "bank" ? " selected" : ""}`}
-                    onClick={() => setPayment("bank")}
-                  >
-                    <div className="bk-pay-badge">
-                      {payment === "bank" && (
-                        <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                          <path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                    </div>
-                    <span className="bk-pay-icon">🏦</span>
-                    <span className="bk-pay-name">Bank Transfer</span>
-                    <p className="bk-pay-desc">We&apos;ll email you our bank details. Your slot is held for 24 hours.</p>
-                  </button>
+                {/* Payment notice */}
+                <div style={{
+                  background: "var(--charcoal)", padding: "24px 28px",
+                  borderLeft: "2px solid var(--gold)", marginBottom: 36, maxWidth: 560,
+                }}>
+                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 8 }}>Payment · Bank Transfer</p>
+                  <p style={{ fontSize: 14, color: "rgba(245,241,232,0.8)", lineHeight: 1.7 }}>
+                    Your slot will be held for <strong style={{ color: "var(--cream)" }}>24 hours</strong>. Once you confirm, we&apos;ll email you our bank details to complete the payment.
+                  </p>
                 </div>
 
                 <div className="bk-btn-row">
-                  <button className="bk-btn-back" onClick={() => setStep("details")}>
+                  <button className="bk-btn-back" onClick={() => { setStep("details"); scrollTop(); }}>
                     <svg width="14" height="8" viewBox="0 0 14 8" fill="none" aria-hidden="true">
                       <path d="M13 4H1M7 1L1 4l6 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
@@ -1177,7 +1201,7 @@ export default function BookingPage(): JSX.Element {
                   </button>
                   <button
                     className="bk-btn-primary"
-                    disabled={!canSubmit || loading}
+                    disabled={loading}
                     onClick={handleConfirm}
                   >
                     {loading ? (
@@ -1195,74 +1219,61 @@ export default function BookingPage(): JSX.Element {
               </div>
             )}
 
-            {/* ── STEP 5: DONE ── */}
+            {/* ── STEP 5: DONE (bank transfer only) ── */}
             {step === "done" && service && date && (
               <div className="bk-success">
                 <div className="bk-success-inner">
-                  {payment === "cash" ? (
-                    <>
-                      <div className="bk-success-icon">
-                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                          <circle cx="32" cy="32" r="31" stroke="#8A9E4A" strokeWidth="1.5"/>
-                          <path d="M20 33l8 8 16-18" stroke="#8A9E4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                  <div className="bk-success-icon">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                      <circle cx="32" cy="32" r="31" stroke="#C9A227" strokeWidth="1.5"/>
+                      <path d="M32 20v14M32 38v4" stroke="#C9A227" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <h2 className="bk-success-title">Almost<br />There!</h2>
+                  <p className="bk-success-body">
+                    Your slot for <strong>{formatDate(date)} at {slot}</strong> is held for 24 hours.
+                    Please complete your bank transfer to confirm. Details have been emailed to <strong>{email}</strong>.
+                  </p>
+                  <div className="bk-bank-box">
+                    <div className="bk-bank-box-title">Bank Transfer Details</div>
+                    <div className="bk-bank-row">
+                      <span className="bk-bank-key">Account Name</span>
+                      <span className="bk-bank-val">{BANK_DETAILS.accountName}</span>
+                    </div>
+                    <div className="bk-bank-row">
+                      <span className="bk-bank-key">Sort Code</span>
+                      <span className="bk-bank-val">{BANK_DETAILS.sortCode}</span>
+                    </div>
+                    <div className="bk-bank-row">
+                      <span className="bk-bank-key">Account Number</span>
+                      <span className="bk-bank-val">{BANK_DETAILS.accountNo}</span>
+                    </div>
+                    <div className="bk-bank-row">
+                      <span className="bk-bank-key">Reference</span>
+                      <span className="bk-bank-val gold">{name} – {service.name.split(" ").slice(0,2).join(" ")}</span>
+                    </div>
+                    <div className="bk-bank-row">
+                      <span className="bk-bank-key">Amount</span>
+                      <span className="bk-bank-val gold">{service.price}</span>
+                    </div>
+                  </div>
+
+                  {/* New customer offers reminder */}
+                  <div style={{ marginBottom: 32 }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--olive-hi)", display: "block", marginBottom: 12 }}>
+                      Don&apos;t Forget Your New Customer Offers
+                    </span>
+                    {[
+                      "Spend £30+ and take home a free premium product",
+                      "Dad & Son first visit cuts — just £25 together",
+                      "20% off all colour, perms & highlight services",
+                    ].map((o) => (
+                      <div key={o} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
+                        <span style={{ width: 16, height: 1, background: "linear-gradient(to right, var(--gold), var(--olive-hi))", display: "block", flexShrink: 0 }} />
+                        <span style={{ fontSize: 13, color: "var(--body-text)" }}>{o}</span>
                       </div>
-                      <h2 className="bk-success-title">
-                        Booking<br />Confirmed ✓
-                      </h2>
-                      <p className="bk-success-body">
-                        We&apos;ll see you on <strong>{formatDate(date)} at {slot}</strong>. A confirmation email has been sent to <strong>{email}</strong>.
-                      </p>
-                      <div className="bk-success-box">
-                        <div className="bk-success-box-title">Your Appointment</div>
-                        <div className="bk-success-detail">
-                          <strong>{service.name}</strong><br/>
-                          {formatDate(date)} at {slot}<br/>
-                          Duration: {service.duration}<br/>
-                          Payment: Cash on the day — <strong>{service.price}</strong>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="bk-success-icon">
-                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                          <circle cx="32" cy="32" r="31" stroke="#C9A227" strokeWidth="1.5"/>
-                          <path d="M32 20v14M32 38v4" stroke="#C9A227" strokeWidth="2" strokeLinecap="round"/>
-                        </svg>
-                      </div>
-                      <h2 className="bk-success-title">
-                        Almost<br />There!
-                      </h2>
-                      <p className="bk-success-body">
-                        Your slot for <strong>{formatDate(date)} at {slot}</strong> is held for 24 hours.
-                        Please complete your bank transfer to confirm. Details have been emailed to <strong>{email}</strong>.
-                      </p>
-                      <div className="bk-bank-box">
-                        <div className="bk-bank-box-title">Bank Transfer Details</div>
-                        <div className="bk-bank-row">
-                          <span className="bk-bank-key">Account Name</span>
-                          <span className="bk-bank-val">{BANK_DETAILS.accountName}</span>
-                        </div>
-                        <div className="bk-bank-row">
-                          <span className="bk-bank-key">Sort Code</span>
-                          <span className="bk-bank-val">{BANK_DETAILS.sortCode}</span>
-                        </div>
-                        <div className="bk-bank-row">
-                          <span className="bk-bank-key">Account Number</span>
-                          <span className="bk-bank-val">{BANK_DETAILS.accountNo}</span>
-                        </div>
-                        <div className="bk-bank-row">
-                          <span className="bk-bank-key">Reference</span>
-                          <span className="bk-bank-val gold">{name} – {service.name.split(" ").slice(0,2).join(" ")}</span>
-                        </div>
-                        <div className="bk-bank-row">
-                          <span className="bk-bank-key">Amount</span>
-                          <span className="bk-bank-val gold">{service.price}</span>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                    ))}
+                  </div>
 
                   <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
                     <a href="tel:01784449005" style={{
@@ -1275,10 +1286,7 @@ export default function BookingPage(): JSX.Element {
                       Call Us · 01784 449005
                     </a>
                     <button
-                      onClick={() => {
-                        setStep("service"); setService(null); setDate(null);
-                        setSlot(""); setName(""); setEmail(""); setPhone(""); setPayment(null);
-                      }}
+                      onClick={handleBookAnother}
                       style={{
                         background: "none", border: "none", cursor: "pointer",
                         fontSize: "10px", fontWeight: 700, letterSpacing: "0.22em",

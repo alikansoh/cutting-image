@@ -212,16 +212,16 @@ export default function Hero(): JSX.Element {
         <div className="absolute inset-0 z-10 pointer-events-none anim-overlay">
 
           {/* 1. Light uniform base — video stays visible through this */}
-          <div className="absolute inset-0 bg-[rgba(8,7,5,0.55)]" />
+          <div className="absolute inset-0 bg-[rgba(8,7,5,0.42)]" />
 
-          {/* 2. Left-side text zone — heavy gradient so headline pops */}
-          <div className="absolute inset-y-0 left-0 w-[65%] bg-linear-to-r from-[rgba(8,7,5,0.82)] via-[rgba(8,7,5,0.45)] to-transparent" />
+          {/* 2. Left-side text zone — heavy gradient so headline pops (softened) */}
+          <div className="absolute inset-y-0 left-0 w-[65%] bg-linear-to-r from-[rgba(8,7,5,0.72)] via-[rgba(8,7,5,0.34)] to-transparent" />
 
-          {/* 3. Bottom stats zone — darkens from bottom up */}
-          <div className="absolute inset-x-0 bottom-0 h-[45%] bg-linear-to-t from-[rgba(8,7,5,0.90)] via-[rgba(8,7,5,0.35)] to-transparent" />
+          {/* 3. Bottom stats zone — darkens from bottom up (softened) */}
+          <div className="absolute inset-x-0 bottom-0 h-[45%] bg-linear-to-t from-[rgba(8,7,5,0.78)] via-[rgba(8,7,5,0.29)] to-transparent" />
 
-          {/* 4. Top fade — subtle vignette */}
-          <div className="absolute inset-x-0 top-0 h-[20%] bg-linear-to-b from-[rgba(8,7,5,0.40)] to-transparent" />
+          {/* 4. Top fade — subtle vignette (softened) */}
+          <div className="absolute inset-x-0 top-0 h-[20%] bg-linear-to-b from-[rgba(8,7,5,0.30)] to-transparent" />
 
           {/* 5. Accent glows */}
           <div className="absolute bottom-0 left-0 w-[500px] h-[380px] bg-[radial-gradient(ellipse_at_bottom_left,rgba(200,164,42,0.10)_0%,transparent_70%)]" />
@@ -276,7 +276,7 @@ export default function Hero(): JSX.Element {
             </Link>
 
             <Link
-              href="tel:+447444724389"
+              href="tel:01784449005"
               className="btn-secondary inline-flex items-center gap-2.5 font-dm text-[0.65rem] md:text-[0.7rem] font-medium tracking-[0.22em] uppercase text-white px-6 md:px-8 py-3.5 md:py-4 anim-cta-2"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
