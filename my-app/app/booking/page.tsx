@@ -28,7 +28,7 @@ import { JSX, useState, useCallback } from "react";
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 
 /** ⚠️  Replace with your real Brevo API key (server-side env var in production) */
-const BREVO_API_KEY = process.env.NEXT_PUBLIC_BREVO_API_KEY ?? "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";
+const BREVO_API_KEY = process.env.NEXT_PUBLIC_BREVO_API_KEY!;
 
 /** Salon's "from" address — must be verified in Brevo */
 const FROM_EMAIL = "cutting.image.staines@gmail.com";
@@ -135,6 +135,8 @@ async function sendEmail(to: string, toName: string, subject: string, html: stri
     } else {
       const errorBody = await res.text();
       console.error(`[sendEmail] ❌ Failed to send email. Status: ${res.status}`, errorBody);
+      console.error("API KEY:", process.env.NEXT_PUBLIC_BREVO_API_KEY);
+
     }
     return res.ok;
   } catch (err) {
