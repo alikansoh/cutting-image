@@ -433,6 +433,31 @@ export default function BookingPage(): JSX.Element {
 
   const stepNum: Record<Step, number> = { service: 1, datetime: 2, details: 3, payment: 4, done: 5 };
 
+  // ── NEW CUSTOMER OFFERS ── (extracted as a shared component block)
+  const NewCustomerOffers = (
+    <div style={{ marginTop: 48, marginBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "var(--olive-hi)" }}>New Customer Offers</span>
+        <span style={{ flex: 1, height: 1, background: "linear-gradient(90deg, var(--olive-hi), var(--gold), transparent)" }} />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 2 }}>
+        {[
+          { price: "Free",    tag: "First Visit Only", title: "Spend £30, Get a Free Product",      desc: "Spend £30 on any service and choose any product from our premium shelf — on us." },
+          { price: "£25",     tag: "First Visit Only", title: "Dad & Son Cuts",                     desc: "Father and son both get a premium haircut together on their very first visit." },
+          { price: "20% Off", tag: "First Visit Only", title: "Colour, Perms & Highlights",         desc: "New customers get 20% off any colour service, perm, or highlight treatment." },
+        ].map((o) => (
+          <div key={o.title} style={{ background: "var(--charcoal)", padding: "28px 24px", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, var(--gold-dim, #6B4F16), var(--gold), var(--gold-light, #F0D878), var(--gold), var(--gold-dim, #6B4F16))" }} />
+            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--gold)", display: "block", marginBottom: 12 }}>{o.tag}</span>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "2.4rem", lineHeight: 0.9, letterSpacing: "0.04em", background: "linear-gradient(118deg, #6B4F16 0%, var(--gold) 50%, #F0D878 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 12 }}>{o.price}</div>
+            <strong style={{ fontSize: 13, fontWeight: 700, color: "var(--cream)", display: "block", marginBottom: 8, letterSpacing: "0.02em" }}>{o.title}</strong>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "rgba(245,241,232,0.55)", lineHeight: 1.7, margin: 0 }}>{o.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <>
       <style>{`
@@ -989,29 +1014,7 @@ export default function BookingPage(): JSX.Element {
                   ))}
                 </div>
 
-                {/* ── NEW CUSTOMER OFFERS ── */}
-                <div style={{ marginTop: 48, marginBottom: 8 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "var(--olive-hi)" }}>New Customer Offers</span>
-                    <span style={{ flex: 1, height: 1, background: "linear-gradient(90deg, var(--olive-hi), var(--gold), transparent)" }} />
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 2 }}>
-                    {[
-                      { price: "Free",  tag: "First Visit Only", title: "Spend £30, Get a Free Product",        desc: "Spend £30 on any service and choose any product from our premium shelf — on us." },
-                      { price: "£25",   tag: "First Visit Only", title: "Dad & Son Cuts",                       desc: "Father and son both get a premium haircut together on their very first visit." },
-                      { price: "20% Off", tag: "First Visit Only", title: "Colour, Perms & Highlights",         desc: "New customers get 20% off any colour service, perm, or highlight treatment." },
-                    ].map((o) => (
-                      <div key={o.title} style={{ background: "var(--charcoal)", padding: "28px 24px", position: "relative", overflow: "hidden" }}>
-                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, var(--gold-dim, #6B4F16), var(--gold), var(--gold-light, #F0D878), var(--gold), var(--gold-dim, #6B4F16))" }} />
-                        <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.26em", textTransform: "uppercase", color: "var(--gold)", display: "block", marginBottom: 12 }}>{o.tag}</span>
-                        <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "2.4rem", lineHeight: 0.9, letterSpacing: "0.04em", background: "linear-gradient(118deg, #6B4F16 0%, var(--gold) 50%, #F0D878 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 12 }}>{o.price}</div>
-                        <strong style={{ fontSize: 13, fontWeight: 700, color: "var(--cream)", display: "block", marginBottom: 8, letterSpacing: "0.02em" }}>{o.title}</strong>
-                        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: 13, color: "rgba(245,241,232,0.55)", lineHeight: 1.7, margin: 0 }}>{o.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
+                {/* ── CTA BUTTON ── */}
                 <div className="bk-btn-row">
                   <button
                     className="bk-btn-primary"
@@ -1024,6 +1027,9 @@ export default function BookingPage(): JSX.Element {
                     </svg>
                   </button>
                 </div>
+
+                {/* ── NEW CUSTOMER OFFERS — below button so it's accessible on mobile ── */}
+                {NewCustomerOffers}
               </div>
             )}
 
