@@ -28,7 +28,7 @@ import { JSX, useState, useCallback } from "react";
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 
 /** ⚠️  Replace with your real Brevo API key (server-side env var in production) */
-const BREVO_API_KEY = process.env.NEXT_PUBLIC_BREVO_API_KEY ?? "xkeysib-eba86c91a566fb83400de8aa90c5dd4092d4a967a864f655cd2dd481ddf485be-6qcqHs4KSXzc7W6sY";
+const BREVO_API_KEY = process.env.NEXT_PUBLIC_BREVO_API_KEY ?? "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";
 
 /** Salon's "from" address — must be verified in Brevo */
 const FROM_EMAIL = "cutting.image.staines@gmail.com";
@@ -117,6 +117,8 @@ function parseDurationMins(d: string): number {
 // ─── BREVO EMAIL ─────────────────────────────────────────────────────────────
 
 async function sendEmail(to: string, toName: string, subject: string, html: string): Promise<boolean> {
+  console.log(`[sendEmail] Sending email to: ${to} (${toName})`);
+  console.log(`[sendEmail] Subject: ${subject}`);
   try {
     const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -128,8 +130,15 @@ async function sendEmail(to: string, toName: string, subject: string, html: stri
         htmlContent: html,
       }),
     });
+    if (res.ok) {
+      console.log(`[sendEmail] ✅ Email sent successfully to ${to}`);
+    } else {
+      const errorBody = await res.text();
+      console.error(`[sendEmail] ❌ Failed to send email. Status: ${res.status}`, errorBody);
+    }
     return res.ok;
-  } catch {
+  } catch (err) {
+    console.error(`[sendEmail] ❌ Network or fetch error:`, err);
     return false;
   }
 }
@@ -403,15 +412,31 @@ export default function BookingPage(): JSX.Element {
 
   const handleConfirm = useCallback(async () => {
     if (!service || !date || !slot) return;
+    console.log("[handleConfirm] Booking submitted. Details:", {
+      service: service.name,
+      price: service.price,
+      duration: service.duration,
+      date: formatDate(date),
+      slot,
+      name,
+      email,
+      phone: phone || "Not provided",
+    });
     setLoading(true);
     const dateStr = formatDate(date);
     const html = buildBankEmail(name, service, dateStr, slot);
     const subject = `📋 Complete Your Booking — Bank Transfer Required`;
-    await sendEmail(email, name, subject, html);
+    console.log("[handleConfirm] Sending customer email to:", email);
+    const success = await sendEmail(email, name, subject, html);
+    if (success) {
+      console.log("[handleConfirm] ✅ Customer email sent successfully.");
+    } else {
+      console.warn("[handleConfirm] ⚠️ Customer email failed — check Brevo API key and verified sender.");
+    }
     setLoading(false);
     setStep("done");
     scrollTop();
-  }, [service, date, slot, name, email]);
+  }, [service, date, slot, name, email, phone]);
 
   // ── RESET + SCROLL TO TOP ─────────────────────────────────────────────────
   const handleBookAnother = useCallback(() => {
