@@ -34,6 +34,10 @@ const BREVO_API_KEY = process.env.NEXT_PUBLIC_BREVO_API_KEY!;
 const FROM_EMAIL = "cutting.image.staines@gmail.com";
 const FROM_NAME  = "Cutting Image";
 
+/** Admin email — receives a notification for every new booking */
+const ADMIN_EMAIL = "newcuttingimage@gmail.com";
+const ADMIN_NAME  = "Cutting Image Admin";
+
 /** Bank transfer details shown in the email */
 const BANK_DETAILS = {
   accountName: "Cutting Image",
@@ -136,7 +140,6 @@ async function sendEmail(to: string, toName: string, subject: string, html: stri
       const errorBody = await res.text();
       console.error(`[sendEmail] ❌ Failed to send email. Status: ${res.status}`, errorBody);
       console.error("API KEY:", process.env.NEXT_PUBLIC_BREVO_API_KEY);
-
     }
     return res.ok;
   } catch (err) {
@@ -144,6 +147,8 @@ async function sendEmail(to: string, toName: string, subject: string, html: stri
     return false;
   }
 }
+
+// ─── EMAIL BUILDERS ───────────────────────────────────────────────────────────
 
 function buildCashEmail(name: string, service: Service, date: string, time: string): string {
   return `
@@ -350,6 +355,147 @@ function buildBankEmail(name: string, service: Service, date: string, time: stri
 </html>`;
 }
 
+/**
+ * Admin notification email — sent to ADMIN_EMAIL for every new booking.
+ * Contains full booking details including customer contact info.
+ */
+function buildAdminNotificationEmail(
+  customerName: string,
+  customerEmail: string,
+  customerPhone: string,
+  service: Service,
+  date: string,
+  time: string,
+  paymentMethod: "cash" | "bank",
+): string {
+  const paymentLabel = paymentMethod === "cash" ? "💵 Cash on the day" : "🏦 Bank Transfer (awaiting payment)";
+  const statusLabel  = paymentMethod === "cash" ? "CONFIRMED" : "PENDING — AWAITING BANK TRANSFER";
+  const statusColor  = paymentMethod === "cash" ? "#8A9E4A" : "#C9A227";
+
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#1C1C1C;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#1C1C1C;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;">
+        <!-- Header -->
+        <tr><td style="background:#111111;padding:28px 40px;text-align:center;border-bottom:2px solid ${statusColor};">
+          <p style="margin:0 0 6px;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#5A5A5A;font-weight:700;">Cutting Image · Admin Notification</p>
+          <h1 style="margin:0;font-family:Georgia,serif;font-size:26px;letter-spacing:0.06em;color:#F5F1E8;line-height:1.2;">NEW BOOKING REQUEST</h1>
+          <p style="margin:10px 0 0;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:${statusColor};font-weight:700;">${statusLabel}</p>
+        </td></tr>
+        <!-- Gold bar -->
+        <tr><td style="height:2px;background:linear-gradient(90deg,#6B4F16,#C9A227,#F0D878,#C9A227,#6B4F16);"></td></tr>
+        <!-- Body -->
+        <tr><td style="background:#1E1E1E;padding:36px 40px;">
+
+          <!-- Customer Details -->
+          <p style="margin:0 0 16px;font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:#C9A227;font-weight:700;">Customer Details</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#111111;margin-bottom:28px;">
+            <tr><td style="padding:24px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#5A5A5A;">Name</p>
+                    <p style="margin:4px 0 0;font-size:16px;color:#F5F1E8;font-weight:700;">${customerName}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#5A5A5A;">Email</p>
+                    <p style="margin:4px 0 0;font-size:14px;color:#8A9E4A;font-weight:600;">
+                      <a href="mailto:${customerEmail}" style="color:#8A9E4A;text-decoration:none;">${customerEmail}</a>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;">
+                    <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#5A5A5A;">Phone</p>
+                    <p style="margin:4px 0 0;font-size:14px;color:#F5F1E8;font-weight:600;">
+                      ${customerPhone
+                        ? `<a href="tel:${customerPhone}" style="color:#F5F1E8;text-decoration:none;">${customerPhone}</a>`
+                        : '<span style="color:#5A5A5A;font-style:italic;">Not provided</span>'
+                      }
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+
+          <!-- Booking Details -->
+          <p style="margin:0 0 16px;font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:#C9A227;font-weight:700;">Booking Details</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#111111;margin-bottom:28px;">
+            <tr><td style="padding:24px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#5A5A5A;">Service</p>
+                    <p style="margin:4px 0 0;font-size:15px;color:#F5F1E8;font-weight:700;">${service.name}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#5A5A5A;">Date &amp; Time</p>
+                    <p style="margin:4px 0 0;font-size:15px;color:#F5F1E8;font-weight:700;">${date} at ${time}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#5A5A5A;">Duration</p>
+                    <p style="margin:4px 0 0;font-size:15px;color:#F5F1E8;font-weight:600;">${service.duration}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#5A5A5A;">Price</p>
+                    <p style="margin:4px 0 0;font-size:26px;color:#C9A227;font-weight:700;letter-spacing:0.04em;">${service.price}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;">
+                    <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#5A5A5A;">Payment Method</p>
+                    <p style="margin:4px 0 0;font-size:14px;color:${statusColor};font-weight:700;">${paymentLabel}</p>
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+
+          ${paymentMethod === "bank" ? `
+          <!-- Bank Transfer Reminder -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-left:2px solid #C9A227;background:#111111;margin-bottom:20px;">
+            <tr><td style="padding:16px 20px;">
+              <p style="margin:0;font-size:13px;color:rgba(245,241,232,0.75);line-height:1.7;">
+                ⚠️ <strong style="color:#F5F1E8;">Slot held for 24 hours.</strong> Customer has been emailed bank transfer details. Confirm once payment is received.
+              </p>
+            </td></tr>
+          </table>
+          ` : `
+          <!-- Cash Reminder -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-left:2px solid #8A9E4A;background:#111111;margin-bottom:20px;">
+            <tr><td style="padding:16px 20px;">
+              <p style="margin:0;font-size:13px;color:rgba(245,241,232,0.75);line-height:1.7;">
+                ✅ <strong style="color:#F5F1E8;">Booking confirmed.</strong> Customer is paying cash on the day.
+              </p>
+            </td></tr>
+          </table>
+          `}
+
+        </td></tr>
+        <!-- Footer -->
+        <tr><td style="background:#111111;padding:18px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+          <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#3A3A3A;">Cutting Image · Internal Booking Notification · Do not reply</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
 // ─── STEP TYPES ───────────────────────────────────────────────────────────────
 
 type Step = "service" | "datetime" | "details" | "payment" | "done";
@@ -426,15 +572,29 @@ export default function BookingPage(): JSX.Element {
     });
     setLoading(true);
     const dateStr = formatDate(date);
-    const html = buildBankEmail(name, service, dateStr, slot);
-    const subject = `📋 Complete Your Booking — Bank Transfer Required`;
+
+    // 1️⃣  Customer email — bank transfer instructions
+    const customerHtml    = buildBankEmail(name, service, dateStr, slot);
+    const customerSubject = `📋 Complete Your Booking — Bank Transfer Required`;
     console.log("[handleConfirm] Sending customer email to:", email);
-    const success = await sendEmail(email, name, subject, html);
-    if (success) {
+    const customerOk = await sendEmail(email, name, customerSubject, customerHtml);
+    if (customerOk) {
       console.log("[handleConfirm] ✅ Customer email sent successfully.");
     } else {
       console.warn("[handleConfirm] ⚠️ Customer email failed — check Brevo API key and verified sender.");
     }
+
+    // 2️⃣  Admin notification email
+    const adminHtml    = buildAdminNotificationEmail(name, email, phone, service, dateStr, slot, "bank");
+    const adminSubject = `🔔 New Booking: ${name} — ${service.name} on ${dateStr} at ${slot}`;
+    console.log("[handleConfirm] Sending admin notification to:", ADMIN_EMAIL);
+    const adminOk = await sendEmail(ADMIN_EMAIL, ADMIN_NAME, adminSubject, adminHtml);
+    if (adminOk) {
+      console.log("[handleConfirm] ✅ Admin notification sent successfully.");
+    } else {
+      console.warn("[handleConfirm] ⚠️ Admin notification failed.");
+    }
+
     setLoading(false);
     setStep("done");
     scrollTop();
@@ -450,7 +610,6 @@ export default function BookingPage(): JSX.Element {
     setEmail("");
     setPhone("");
     setPayment(null);
-    // Instant jump to top — works regardless of layout/framework
     setTimeout(() => {
       window.scrollTo(0, 0);
       document.documentElement.scrollTop = 0;
@@ -1183,7 +1342,7 @@ export default function BookingPage(): JSX.Element {
             {step === "payment" && service && date && (
               <div>
                 <h2 className="bk-section-title">Confirm Your <span className="g">Booking</span></h2>
-                <p className="bk-section-sub">Review your appointment, then confirm — we&apos;ll email your bank transfer details.</p>
+                <p className="bk-section-sub">Review your appointment, then confirm — we&apos;ll email you our bank transfer details.</p>
 
                 {/* Summary */}
                 <div className="bk-summary">
@@ -1252,7 +1411,7 @@ export default function BookingPage(): JSX.Element {
               </div>
             )}
 
-            {/* ── STEP 5: DONE (bank transfer only) ── */}
+            {/* ── STEP 5: DONE (bank transfer) ── */}
             {step === "done" && service && date && (
               <div className="bk-success">
                 <div className="bk-success-inner">
