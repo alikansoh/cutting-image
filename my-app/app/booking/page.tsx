@@ -28,10 +28,10 @@ import { JSX, useState, useCallback } from "react";
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 
 /** ⚠️  Replace with your real Brevo API key (server-side env var in production) */
-const BREVO_API_KEY = process.env.NEXT_PUBLIC_BREVO_API_KEY ?? "YOUR_BREVO_API_KEY";
+const BREVO_API_KEY = process.env.NEXT_PUBLIC_BREVO_API_KEY ?? "xkeysib-eba86c91a566fb83400de8aa90c5dd4092d4a967a864f655cd2dd481ddf485be-6qcqHs4KSXzc7W6sY";
 
 /** Salon's "from" address — must be verified in Brevo */
-const FROM_EMAIL = "hello@cuttingimage.co.uk";
+const FROM_EMAIL = "cutting.image.staines@gmail.com";
 const FROM_NAME  = "Cutting Image";
 
 /** Bank transfer details shown in the email */
