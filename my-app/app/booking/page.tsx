@@ -139,7 +139,6 @@ async function sendEmail(to: string, toName: string, subject: string, html: stri
     } else {
       const errorBody = await res.text();
       console.error(`[sendEmail] ❌ Failed to send email. Status: ${res.status}`, errorBody);
-      console.error("API KEY:", process.env.NEXT_PUBLIC_BREVO_API_KEY);
     }
     return res.ok;
   } catch (err) {
