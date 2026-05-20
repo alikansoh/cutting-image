@@ -40,9 +40,9 @@ const ADMIN_NAME  = "Cutting Image Admin";
 
 /** Bank transfer details shown in the email */
 const BANK_DETAILS = {
-  accountName: "Cutting Image",
-  sortCode:    "XX-XX-XX",   // ← replace
-  accountNo:   "XXXXXXXX",   // ← replace
+  accountName: "E faroun",
+  sortCode:    "23-05-80",   // ← replace
+  accountNo:   "54791054",   // ← replace
   reference:   "Your name + service",
 };
 
