@@ -12,7 +12,7 @@ import { JSX, useEffect, useRef, useState } from "react";
   />
 */
 
-// ── GSAP type helpers (no `any`, no global augmentation) ──────────────────────
+// ── GSAP type helpers ──────────────────────────────────────────────────────────
 type GsapInstance = {
   registerPlugin: (...args: unknown[]) => void;
   fromTo: (
@@ -32,6 +32,132 @@ const getGsap = (): GsapInstance | undefined =>
 
 const getScrollTrigger = (): ScrollTriggerInstance | undefined =>
   (window as unknown as Record<string, unknown>)["ScrollTrigger"] as ScrollTriggerInstance | undefined;
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+
+/** ⚠️  Replace with your real Brevo API key (server-side env var in production) */
+const BREVO_API_KEY = process.env.NEXT_PUBLIC_BREVO_API_KEY!;
+
+/** Salon's "from" address — must be verified in Brevo */
+const FROM_EMAIL = "cutting.image.staines@gmail.com";
+const FROM_NAME  = "Cutting Image";
+
+/** Admin email — receives all contact form messages */
+const ADMIN_EMAIL = "newcuttingimage@gmail.com";
+const ADMIN_NAME  = "Cutting Image Admin";
+
+// ── Brevo email sender ────────────────────────────────────────────────────────
+
+async function sendEmail(
+  to: string,
+  toName: string,
+  subject: string,
+  html: string
+): Promise<boolean> {
+  try {
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": BREVO_API_KEY,
+      },
+      body: JSON.stringify({
+        sender: { name: FROM_NAME, email: FROM_EMAIL },
+        to: [{ email: to, name: toName }],
+        subject,
+        htmlContent: html,
+      }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+// ── Admin contact email builder ───────────────────────────────────────────────
+
+function buildContactEmail(
+  name: string,
+  email: string,
+  phone: string,
+  message: string
+): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#1C1C1C;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#1C1C1C;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+        <!-- Header -->
+        <tr><td style="background:#111111;padding:28px 40px;text-align:center;border-bottom:2px solid #8A9E4A;">
+          <p style="margin:0 0 6px;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#5A5A5A;font-weight:700;">Cutting Image · Website Contact</p>
+          <h1 style="margin:0;font-family:Georgia,serif;font-size:26px;letter-spacing:0.06em;color:#F5F1E8;line-height:1.2;">NEW MESSAGE</h1>
+        </td></tr>
+        <!-- Gold bar -->
+        <tr><td style="height:2px;background:linear-gradient(90deg,#6B4F16,#C9A227,#F0D878,#C9A227,#6B4F16);"></td></tr>
+        <!-- Body -->
+        <tr><td style="background:#1E1E1E;padding:36px 40px;">
+          <!-- Sender details -->
+          <p style="margin:0 0 16px;font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:#C9A227;font-weight:700;">From</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#111111;margin-bottom:28px;">
+            <tr><td style="padding:24px 28px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#5A5A5A;">Name</p>
+                    <p style="margin:4px 0 0;font-size:16px;color:#F5F1E8;font-weight:700;">${name}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#5A5A5A;">Email</p>
+                    <p style="margin:4px 0 0;font-size:14px;color:#8A9E4A;font-weight:600;">
+                      <a href="mailto:${email}" style="color:#8A9E4A;text-decoration:none;">${email}</a>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;">
+                    <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#5A5A5A;">Phone</p>
+                    <p style="margin:4px 0 0;font-size:14px;color:#F5F1E8;font-weight:600;">
+                      ${phone
+                        ? `<a href="tel:${phone}" style="color:#F5F1E8;text-decoration:none;">${phone}</a>`
+                        : '<span style="color:#5A5A5A;font-style:italic;">Not provided</span>'
+                      }
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+          <!-- Message -->
+          <p style="margin:0 0 16px;font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:#C9A227;font-weight:700;">Message</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#111111;margin-bottom:20px;">
+            <tr><td style="padding:24px 28px;">
+              <p style="margin:0;font-size:15px;color:rgba(245,241,232,0.85);line-height:1.8;white-space:pre-wrap;">${message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+            </td></tr>
+          </table>
+          <!-- Reply hint -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-left:2px solid #8A9E4A;background:#111111;">
+            <tr><td style="padding:14px 20px;">
+              <p style="margin:0;font-size:13px;color:rgba(245,241,232,0.6);line-height:1.7;">
+                Reply directly to this email to respond to ${name}.
+              </p>
+            </td></tr>
+          </table>
+        </td></tr>
+        <!-- Footer -->
+        <tr><td style="background:#111111;padding:16px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+          <p style="margin:0;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#3A3A3A;">Cutting Image · Website Contact Form · Do not reply</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -92,9 +218,11 @@ export default function ContactPage(): JSX.Element {
   const hasAnimated      = useRef<boolean>(false);
   const hasLoadedScripts = useRef<boolean>(false);
 
-  const [form, setForm]       = useState({ name: "", phone: "", message: "" });
+  const [form, setForm]       = useState({ name: "", email: "", phone: "", message: "" });
   const [focused, setFocused] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending]   = useState(false);
+  const [sendError, setSendError] = useState(false);
 
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long" });
 
@@ -124,7 +252,6 @@ export default function ContactPage(): JSX.Element {
     initAnimations();
   };
 
-  // Same gradient values as About's --gold variables
   const GOLD_SPAN_STYLE = [
     "display:inline-block",
     "will-change:transform,opacity",
@@ -146,10 +273,6 @@ export default function ContactPage(): JSX.Element {
     const page = pageRef.current;
     if (!page) return;
 
-    // Hero char-splitting — same pattern as About's fixed version.
-    // Gold gradient is stamped directly on each char span (not the parent)
-    // because background-clip:text does NOT paint through display:inline-block children.
-    // Gold chars get no clearProps so GSAP never touches the gradient inline styles.
     page.querySelectorAll<HTMLElement>(".cp-hero-line").forEach((line) => {
       const isGold = line.classList.contains("gold");
       const text = line.textContent ?? "";
@@ -172,9 +295,7 @@ export default function ContactPage(): JSX.Element {
         { yPercent: 0, rotationX: 0, opacity: 1, stagger: 0.016, duration: 0.85, ease: "power3.out", delay: 0.2, clearProps: "transform,opacity" } as Record<string, unknown>
       );
     }
-
     if (goldChars.length) {
-      // No clearProps — gradient is in inline style, must not be disturbed
       gsap.fromTo(
         goldChars,
         { yPercent: 110, rotationX: -40, opacity: 0 } as Record<string, unknown>,
@@ -187,14 +308,12 @@ export default function ContactPage(): JSX.Element {
       { y: 20, opacity: 0 } as Record<string, unknown>,
       { y: 0, opacity: 1, duration: 1, ease: "power2.out", delay: 0.15, clearProps: "transform,opacity" } as Record<string, unknown>
     );
-
     gsap.fromTo(
       page.querySelector<HTMLElement>(".cp-hero-sub"),
       { y: 24, opacity: 0 } as Record<string, unknown>,
       { y: 0, opacity: 1, duration: 1, ease: "power2.out", delay: 0.9, clearProps: "transform,opacity" } as Record<string, unknown>
     );
 
-    // Line draws
     page.querySelectorAll<HTMLElement>(".cp-line-draw").forEach((el) => {
       gsap.fromTo(el, { scaleX: 0 } as Record<string, unknown>, {
         scaleX: 1, duration: 1.4, ease: "power3.out", transformOrigin: "left center",
@@ -202,7 +321,6 @@ export default function ContactPage(): JSX.Element {
       } as Record<string, unknown>);
     });
 
-    // Contact method cards
     gsap.fromTo(
       page.querySelectorAll<HTMLElement>(".cp-method-card"),
       { y: 60, opacity: 0 } as Record<string, unknown>,
@@ -213,7 +331,6 @@ export default function ContactPage(): JSX.Element {
       } as Record<string, unknown>
     );
 
-    // Hours rows
     gsap.fromTo(
       page.querySelectorAll<HTMLElement>(".cp-hour-row"),
       { x: -30, opacity: 0 } as Record<string, unknown>,
@@ -224,7 +341,6 @@ export default function ContactPage(): JSX.Element {
       } as Record<string, unknown>
     );
 
-    // Form panel
     gsap.fromTo(
       page.querySelector<HTMLElement>(".cp-form-panel"),
       { x: 50, opacity: 0 } as Record<string, unknown>,
@@ -235,7 +351,6 @@ export default function ContactPage(): JSX.Element {
       } as Record<string, unknown>
     );
 
-    // Map section
     gsap.fromTo(
       page.querySelector<HTMLElement>(".cp-map-section"),
       { y: 40, opacity: 0 } as Record<string, unknown>,
@@ -246,7 +361,6 @@ export default function ContactPage(): JSX.Element {
       } as Record<string, unknown>
     );
 
-    // Fade ups
     page.querySelectorAll<HTMLElement>(".cp-fade-up").forEach((el) => {
       gsap.fromTo(el, { y: 40, opacity: 0 } as Record<string, unknown>, {
         y: 0, opacity: 1, duration: 0.9, ease: "power2.out",
@@ -256,16 +370,29 @@ export default function ContactPage(): JSX.Element {
     });
   };
 
-  const handleSubmit = (e: React.MouseEvent) => {
+  const canSubmit = !!form.name.trim() && !!form.email.trim() && form.email.includes("@") && !!form.message.trim();
+
+  const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!form.name || !form.message) return;
-    setSubmitted(true);
+    if (!canSubmit || sending) return;
+    setSending(true);
+    setSendError(false);
+
+    const subject = `💬 New Message from ${form.name} — Cutting Image Website`;
+    const html = buildContactEmail(form.name, form.email, form.phone, form.message);
+    const ok = await sendEmail(ADMIN_EMAIL, ADMIN_NAME, subject, html);
+
+    setSending(false);
+    if (ok) {
+      setSubmitted(true);
+    } else {
+      setSendError(true);
+    }
   };
 
   return (
     <>
       <style>{`
-        /* ── About-matching palette ── */
         :root {
           --cream:      #F5F1E8;
           --cream-s:    #EDE7D6;
@@ -287,15 +414,12 @@ export default function ContactPage(): JSX.Element {
         .cp-page *, .cp-page *::before, .cp-page *::after {
           box-sizing: border-box; margin: 0; padding: 0;
         }
-
         .cp-page {
           background: var(--cream);
           color: var(--charcoal);
           font-family: 'DM Sans', sans-serif;
           position: relative; overflow-x: hidden;
         }
-
-        /* Grain overlay — same as About */
         .cp-page::after {
           content: '';
           position: fixed; inset: 0; z-index: 200;
@@ -319,8 +443,6 @@ export default function ContactPage(): JSX.Element {
           overflow: hidden;
           margin-top: 80px;
         }
-
-        /* Radial glow — olive tint to match About's palette */
         .cp-hero-glow {
           position: absolute;
           width: 900px; height: 900px; border-radius: 50%;
@@ -333,8 +455,6 @@ export default function ContactPage(): JSX.Element {
           0%, 100% { opacity: 0.5; transform: scale(1); }
           50%       { opacity: 1;   transform: scale(1.08); }
         }
-
-        /* Large bg watermark */
         .cp-hero-bg-text {
           position: absolute; bottom: -30px; right: -20px;
           font-family: 'Bebas Neue', sans-serif;
@@ -344,7 +464,6 @@ export default function ContactPage(): JSX.Element {
           pointer-events: none; user-select: none; z-index: 0;
           white-space: nowrap;
         }
-
         .cp-hero-eyebrow {
           display: flex; align-items: center; gap: 14px;
           margin-bottom: 28px; position: relative; z-index: 2;
@@ -358,9 +477,7 @@ export default function ContactPage(): JSX.Element {
           background: linear-gradient(90deg, var(--olive-hi), var(--gold));
           opacity: 0.8;
         }
-
         .cp-hero-heading { position: relative; z-index: 2; margin-bottom: 32px; }
-
         .cp-hero-line {
           display: block;
           font-family: 'Bebas Neue', sans-serif;
@@ -368,11 +485,7 @@ export default function ContactPage(): JSX.Element {
           line-height: 0.87; letter-spacing: 0.02em;
           color: var(--charcoal);
         }
-        /* Parent .gold is transparent — gradient lives on each char span (see JS) */
-        .cp-hero-line.gold {
-          color: transparent;
-        }
-
+        .cp-hero-line.gold { color: transparent; }
         .cp-hero-sub {
           font-family: 'Cormorant Garamond', serif; font-style: italic;
           font-size: clamp(1.1rem, 1.5vw, 1.35rem); line-height: 1.75;
@@ -382,7 +495,6 @@ export default function ContactPage(): JSX.Element {
 
         /* ─── CONTACT METHOD CARDS ─── */
         .cp-methods-section { padding: 100px 0 0; }
-
         .cp-methods {
           display: grid; grid-template-columns: repeat(3, 1fr);
           gap: 2px; background: var(--border);
@@ -397,7 +509,6 @@ export default function ContactPage(): JSX.Element {
           display: flex; flex-direction: column; gap: 0;
         }
         .cp-method-card:hover { background: var(--cream-d); }
-
         .cp-method-card::before {
           content: ''; position: absolute; top: 0; left: 0; right: 0;
           height: 2px;
@@ -406,30 +517,25 @@ export default function ContactPage(): JSX.Element {
           transition: transform 0.55s ease;
         }
         .cp-method-card:hover::before { transform: scaleX(1); }
-
         .cp-method-icon {
           width: 40px; height: 40px; color: var(--olive-hi);
           margin-bottom: 28px; flex-shrink: 0;
           transition: transform 0.4s ease;
         }
         .cp-method-card:hover .cp-method-icon { transform: translateY(-4px); }
-
         .cp-method-label {
           font-size: 9.5px; letter-spacing: 0.28em; text-transform: uppercase;
           color: var(--muted); margin-bottom: 12px; font-weight: 600;
         }
-
         .cp-method-value {
           font-family: 'Bebas Neue', sans-serif;
           font-size: 1.8rem; letter-spacing: 0.04em; line-height: 1.1;
           color: var(--charcoal); margin-bottom: 6px;
         }
-
         .cp-method-sub {
           font-family: 'Cormorant Garamond', serif; font-style: italic;
           font-size: 1rem; color: var(--muted); margin-bottom: 32px; flex: 1;
         }
-
         .cp-method-cta {
           display: inline-flex; align-items: center; gap: 10px;
           font-size: 10px; font-weight: 600; letter-spacing: 0.2em;
@@ -487,7 +593,6 @@ export default function ContactPage(): JSX.Element {
         }
 
         .cp-hours { display: flex; flex-direction: column; }
-
         .cp-hour-row {
           display: flex; justify-content: space-between; align-items: center;
           padding: 18px 0;
@@ -502,21 +607,18 @@ export default function ContactPage(): JSX.Element {
           position: absolute; left: 0; top: 0; bottom: 0;
           width: 2px; background: var(--olive-hi);
         }
-
         .cp-hour-day {
           font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
           color: var(--muted); font-weight: 600;
           transition: color 0.3s ease;
         }
         .cp-hour-row.today .cp-hour-day { color: var(--charcoal); }
-
         .cp-hour-time {
           font-family: 'Cormorant Garamond', serif; font-style: italic;
           font-size: 1.05rem; color: var(--body-text);
           transition: color 0.3s ease;
         }
         .cp-hour-row.today .cp-hour-time { color: var(--olive-hi); }
-
         .cp-hour-badge {
           font-size: 8.5px; letter-spacing: 0.2em; text-transform: uppercase;
           background: var(--olive-hi); color: #fff;
@@ -531,7 +633,6 @@ export default function ContactPage(): JSX.Element {
         .cp-form { display: flex; flex-direction: column; gap: 0; }
 
         .cp-field { position: relative; margin-bottom: 2px; }
-
         .cp-field-label {
           font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase;
           color: var(--muted); font-weight: 600;
@@ -587,11 +688,18 @@ export default function ContactPage(): JSX.Element {
           transform: translateX(-100%);
           transition: transform 0.4s ease;
         }
-        .cp-submit-btn:hover { gap: 22px; }
-        .cp-submit-btn:hover::before { transform: translateX(0); }
+        .cp-submit-btn:hover:not(:disabled) { gap: 22px; }
+        .cp-submit-btn:hover:not(:disabled)::before { transform: translateX(0); }
+        .cp-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .cp-submit-btn span, .cp-submit-btn svg { position: relative; z-index: 1; }
         .cp-submit-btn svg { transition: transform 0.35s ease; }
-        .cp-submit-btn:hover svg { transform: translateX(4px); }
+        .cp-submit-btn:hover:not(:disabled) svg { transform: translateX(4px); }
+
+        .cp-error-note {
+          margin-top: 16px;
+          font-size: 13px; color: #c0392b;
+          font-family: 'Cormorant Garamond', serif; font-style: italic;
+        }
 
         /* Success */
         .cp-success {
@@ -613,12 +721,10 @@ export default function ContactPage(): JSX.Element {
           border-top: 1px solid var(--border);
           padding: 0 0 100px;
         }
-
         .cp-map-header {
           display: flex; align-items: flex-end; justify-content: space-between;
           padding: 72px 0 40px; flex-wrap: wrap; gap: 20px;
         }
-
         .cp-map-frame {
           width: 100%; height: 440px; position: relative;
           overflow: hidden;
@@ -635,7 +741,6 @@ export default function ContactPage(): JSX.Element {
           border: 1px solid var(--border);
           z-index: 3; pointer-events: none;
         }
-
         .cp-map-tag {
           position: absolute; bottom: 24px; left: 24px; z-index: 4;
           background: rgba(245,241,232,0.95);
@@ -651,7 +756,6 @@ export default function ContactPage(): JSX.Element {
           font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase;
           color: var(--olive-hi);
         }
-
         .cp-map-directions {
           display: inline-flex; align-items: center; gap: 10px;
           font-size: 10px; font-weight: 600; letter-spacing: 0.2em;
@@ -668,7 +772,6 @@ export default function ContactPage(): JSX.Element {
           border-top: 1px solid var(--border);
         }
         @media (max-width: 640px) { .cp-bottom { grid-template-columns: 1fr; } }
-
         .cp-bottom-item {
           padding: 48px 52px;
           border-right: 1px solid var(--border);
@@ -676,7 +779,6 @@ export default function ContactPage(): JSX.Element {
           display: flex; flex-direction: column; gap: 10px;
         }
         .cp-bottom-item:last-child { border-right: none; }
-
         .cp-bottom-label {
           font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
           color: var(--olive-hi); font-weight: 600;
@@ -797,6 +899,7 @@ export default function ContactPage(): JSX.Element {
                 </div>
               ) : (
                 <div className="cp-form">
+                  {/* Name */}
                   <div className={`cp-field${focused === "name" ? " active" : ""}${form.name ? " filled" : ""}`}>
                     <label className="cp-field-label" htmlFor="cp-name">Your Name</label>
                     <input id="cp-name" className="cp-input" type="text" autoComplete="name"
@@ -805,6 +908,16 @@ export default function ContactPage(): JSX.Element {
                     <span className="cp-field-line" />
                   </div>
 
+                  {/* Email */}
+                  <div className={`cp-field${focused === "email" ? " active" : ""}${form.email ? " filled" : ""}`}>
+                    <label className="cp-field-label" htmlFor="cp-email">Email Address</label>
+                    <input id="cp-email" className="cp-input" type="email" autoComplete="email"
+                      value={form.email} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                    <span className="cp-field-line" />
+                  </div>
+
+                  {/* Phone */}
                   <div className={`cp-field${focused === "phone" ? " active" : ""}${form.phone ? " filled" : ""}`}>
                     <label className="cp-field-label" htmlFor="cp-phone">Phone (optional)</label>
                     <input id="cp-phone" className="cp-input" type="tel" autoComplete="tel"
@@ -813,6 +926,7 @@ export default function ContactPage(): JSX.Element {
                     <span className="cp-field-line" />
                   </div>
 
+                  {/* Message */}
                   <div className={`cp-field${focused === "message" ? " active" : ""}${form.message ? " filled" : ""}`}>
                     <label className="cp-field-label" htmlFor="cp-message">Your Message</label>
                     <textarea id="cp-message" className="cp-textarea"
@@ -827,12 +941,29 @@ export default function ContactPage(): JSX.Element {
                     — we&apos;re happy to help.
                   </p>
 
-                  <button className="cp-submit-btn" onClick={handleSubmit}>
-                    <span>Send Message</span>
-                    <svg width="18" height="10" viewBox="0 0 18 10" fill="none" aria-hidden="true">
-                      <path d="M1 5h16M11 1l5 4-5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                  <button
+                    className="cp-submit-btn"
+                    onClick={handleSubmit}
+                    disabled={!canSubmit || sending}
+                  >
+                    {sending ? (
+                      <span>Sending…</span>
+                    ) : (
+                      <>
+                        <span>Send Message</span>
+                        <svg width="18" height="10" viewBox="0 0 18 10" fill="none" aria-hidden="true">
+                          <path d="M1 5h16M11 1l5 4-5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </>
+                    )}
                   </button>
+
+                  {sendError && (
+                    <p className="cp-error-note">
+                      Something went wrong — please try again or call us on{" "}
+                      <a href="tel:01784449005" style={{ color: "var(--olive-hi)" }}>01784 449005</a>.
+                    </p>
+                  )}
                 </div>
               )}
             </div>

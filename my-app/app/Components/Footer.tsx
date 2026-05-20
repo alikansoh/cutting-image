@@ -462,7 +462,7 @@ export default function Footer(): JSX.Element {
             </p>
 
             <div className="ft-social" aria-label="Social media links">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+              <a href="https://www.instagram.com/cutting_image_staines/" target="_blank" rel="noopener noreferrer"
                 className="ft-social-link" aria-label="Instagram">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
