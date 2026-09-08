@@ -1110,6 +1110,7 @@ export default function BookingPage(): JSX.Element {
       `}</style>
 
       <div className="bk-page" id="booking">
+        <h1 className="sr-only">Book Your Chair — Online Booking, 7 Days a Week</h1>
 
         {/* ── HERO ── */}
         <div className="bk-inner">

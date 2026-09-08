@@ -443,6 +443,7 @@ export default function AboutPage(): JSX.Element {
       `}</style>
 
       <div className="ap-page" ref={pageRef}>
+        <h1 className="sr-only">A Traditional Barbershop in the Heart of Staines</h1>
 
         {/* HERO */}
         <section className="ap-hero">

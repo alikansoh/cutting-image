@@ -659,6 +659,7 @@ export default function ServicesSection(): JSX.Element {
       `}</style>
 
       <section className="sv-section" ref={sectionRef} id="services">
+        <h1 className="sr-only">Barber Services in Staines-upon-Thames — Menu &amp; Prices</h1>
         <div className="sv-vbar" aria-hidden="true" />
 
         {/* ── HERO ── */}

@@ -263,7 +263,7 @@ export default function Nav() {
           </div>
           <div className="flex items-center justify-between">
             <p className="font-corm italic text-[.65rem] tracking-[.22em]"
-               style={{ color: 'rgba(28,28,28,.3)' }}>Est. 2015 — Precision craft, every cut.</p>
+               style={{ color: 'rgba(28,28,28,.3)' }}>Est. 1990 — Precision craft, every cut.</p>
             <div className="flex items-center gap-3">
               {['instagram','facebook'].map(name => (
                 <a key={name} href="#" aria-label={name}

@@ -176,9 +176,15 @@ const jsonLd = {
   hasMap: 'https://www.google.com/maps/place/Cutting+Image/@51.4350981,-0.5086567,17z/data=!3m1!4b1!4m6!3m5!1s0x487676cac16c3115:0x78edc50a61e9f190!8m2!3d51.4350981!4d-0.5060818!16s%2Fg%2F1tcz7tw9?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D',
   description: 'Premier barbershop in Staines-upon-Thames since 1990. Expert cuts, hot towel shaves, skin fades & beard sculpting. Walk-ins always welcome.',
   foundingDate: '1990',
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '4.7',
+    reviewCount: '529',
+    bestRating: '5',
+    worstRating: '1',
+  },
   sameAs: [
     'https://www.instagram.com/cutting_image_staines/',   // ← replace with your actual Instagram URL
-    'https://www.facebook.com',    // ← replace with your actual Facebook URL
     'https://www.google.com/maps/place/Cutting+Image/@51.4350981,-0.5086567,17z/data=!3m1!4b1!4m6!3m5!1s0x487676cac16c3115:0x78edc50a61e9f190!8m2!3d51.4350981!4d-0.5060818!16s%2Fg%2F1tcz7tw9?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D',
   ],
   makesOffer: [

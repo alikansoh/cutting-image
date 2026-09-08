@@ -21,7 +21,7 @@ const STATS: Stat[] = [
   { value: "35+",  label: "Years of Excellence" },
   { value: "10K+", label: "Happy Clients"        },
   { value: "8",    label: "Master Barbers"       },
-  { value: "4.9★", label: "Average Rating"       },
+  { value: "4.7★", label: "Average Rating"       },
 ];
 
 const PILLARS: Pillar[] = [

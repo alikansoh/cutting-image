@@ -70,7 +70,7 @@ const REVIEWS: Review[] = [
   },
 ];
 
-const GOOGLE_RATING = 4.9;
+const GOOGLE_RATING = 4.7;
 
 function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
   return (

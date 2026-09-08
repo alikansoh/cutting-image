@@ -355,6 +355,7 @@ export default function GalleryPage(): JSX.Element {
 
       {/* Page */}
       <div className="gp" ref={pageRef}>
+        <h1 className="sr-only">Our Work — Fades, Shaves &amp; Beard Sculpting in Staines</h1>
         <span className="g-side-txt" aria-hidden="true">Cutting Image · Est 1990 · Our Gallery</span>
 
         {/* Ticker */}

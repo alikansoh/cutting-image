@@ -260,7 +260,7 @@ export default function Hero(): JSX.Element {
           {/* Subheading */}
           <p className="font-dm text-[0.95rem] md:text-[1.05rem] lg:text-[1.12rem] leading-relaxed text-white/85 max-w-[90vw] md:max-w-[400px] lg:max-w-[460px] mb-7 md:mb-10 anim-sub">
             Expert cuts, hot towel shaves &amp; beard sculpting — crafted for the
-            modern gentleman at 173 High Street, Staines.
+            modern gentleman at 2 Kingston Road, Staines.
           </p>
 
           {/* CTAs */}
@@ -291,7 +291,7 @@ export default function Hero(): JSX.Element {
             {[
               { num: '10K+', label: 'Clients Served'  },
               { num: '35+',  label: 'Years Experience' },
-              { num: '4.9★', label: 'Google Rating'    },
+              { num: '4.7★', label: 'Google Rating'    },
             ].map(({ num, label }, i) => (
               <div key={label} className="flex items-center gap-5 md:gap-8">
                 <div className="flex flex-col gap-1">

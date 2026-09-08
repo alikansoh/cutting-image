@@ -797,6 +797,7 @@ export default function ContactPage(): JSX.Element {
       `}</style>
 
       <div className="cp-page" ref={pageRef} id="contact">
+        <h1 className="sr-only">Visit Cutting Image — 2 Kingston Rd, Staines</h1>
 
         {/* ─── HERO ─── */}
         <section className="cp-hero">
